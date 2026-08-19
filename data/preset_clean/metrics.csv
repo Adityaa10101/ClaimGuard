@@ -1,0 +1,6 @@
+metric_id,category,metric_name,unit,fy23_value,fy24_value,yoy_change_pct,notes
+MTR-001,Emissions,Scope 1 Direct Emissions,MT CO2e,4200.00,4100.00,-2.38,Fuel and company vehicle fleet
+MTR-002,Emissions,Scope 2 Indirect Emissions,MT CO2e,6300.00,6128.05,-2.73,Purchased electricity for facilities
+MTR-TOTAL,Emissions,Total Scope 1 & 2 Emissions,MT CO2e,10500.00,10228.05,-2.59,Combined total emissions
+MTR-003,Water,Facility Water Usage,kGal,15200.00,14900.00,-1.97,Cooling and domestic water consumption
+MTR-004,Waste,Solid Waste Generated,Tons,850.00,830.00,-2.35,Recycled and landfilled waste

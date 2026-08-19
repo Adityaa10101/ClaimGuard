@@ -1,0 +1,12 @@
+ANNUAL SUSTAINABILITY & PERFORMANCE REPORT FY24 - CLAIMGUARD CORP
+
+EXECUTIVE SUMMARY & KEY CLAIMS:
+During Fiscal Year 2024 (FY24), ClaimGuard Corp continued its commitment to operational efficiency and environmental stewardship across all facilities.
+
+Key Achievement:
+- Achieved a 2.59% reduction in total Scope 1 & Scope 2 greenhouse gas emissions across operating regions in FY24 compared to FY23 baseline performance.
+
+Details:
+In FY23, aggregate emissions measured 10,500.00 metric tons CO2e across all data centers and corporate hub facilities. Through targeted energy efficiency retrofits, renewable energy purchases, and optimized server workload routing, total emissions for FY24 dropped to 10,228.05 metric tons CO2e. This represents a net reduction of 271.95 metric tons CO2e, or exactly a 2.59% decrease year-over-year.
+
+We remain dedicated to transparent, verified reporting of all key performance indicators.
