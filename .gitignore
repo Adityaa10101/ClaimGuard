@@ -1,9 +1,48 @@
-# Environment file
+# Environment files
 .env
+.env.*
+!.env.example
 
 # Python bytecode
 __pycache__/
 *.py[cod]
+*$py.class
+*.pyo
 
 # Streamlit config
 .streamlit/
+
+# Temporary files
+tmp/
+uploads/
+
+# User uploaded PDFs (data isolation)
+*.pdf
+!data/**/*.pdf
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Node modules (frontend)
+node_modules/
+.next/
+
+# Pytest cache
+.pytest_cache/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Logs (no API keys in logs)
+*.log
+
+# Virtual environment
+venv/
+.venv/
