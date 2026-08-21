@@ -110,7 +110,10 @@ st.markdown("""
 
 # Sidebar Configuration
 st.sidebar.image("https://img.icons8.com/isometric/100/shield-gradient.png", width=64)
-st.sidebar.title("Audit Settings")
+st.sidebar.title("ClaimGuard Audit")
+st.sidebar.page_link("app.py", label="🏠 Overview & Architecture", icon=None)
+st.sidebar.page_link("pages/Audit_Dashboard.py", label="🚀 Audit Engine Dashboard", icon=None)
+st.sidebar.markdown("---")
 
 preset_choice = st.sidebar.radio(
     "Select Evaluation Case:",
@@ -123,7 +126,7 @@ st.sidebar.subheader("API Settings (Optional)")
 user_groq_key = st.sidebar.text_input("Groq API Key (Optional)", type="password", help="Leave blank to use zero-config offline rule extractor.")
 
 # Paths setup
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRESET_CLEAN_DIR = os.path.join(BASE_DIR, "data", "preset_clean")
 PRESET_FLAGGED_DIR = os.path.join(BASE_DIR, "data", "preset_flagged")
 

@@ -9,8 +9,18 @@ st.set_page_config(
     page_title="ClaimGuard — Deterministic ESG Auditing",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
+
+# ──────────────────────────────────────────────────────────────────────
+# SIDEBAR NAVIGATION & TOP CTA
+# ──────────────────────────────────────────────────────────────────────
+st.sidebar.image("https://img.icons8.com/isometric/100/shield-gradient.png", width=64)
+st.sidebar.title("ClaimGuard")
+st.sidebar.page_link("app.py", label="🏠 Overview & Architecture", icon=None)
+st.sidebar.page_link("pages/Audit_Dashboard.py", label="🚀 Launch Audit Engine (Presets & Upload)", icon=None)
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **Tip:** Click **'Launch Audit Engine'** above to test Preset 1, Preset 2, or upload custom data.")
 
 # ──────────────────────────────────────────────────────────────────────
 # LOAD HERO IMAGE AS BASE64
@@ -28,21 +38,12 @@ hero_b64 = load_image_b64(os.path.join(BASE_DIR, "assets", "hero-illustration.jp
 
 
 # ──────────────────────────────────────────────────────────────────────
-# HIDE STREAMLIT DEFAULT CHROME
+# STYLING (Preserve Sidebar & Standard Controls)
 # ──────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    #MainMenu, header[data-testid="stHeader"], footer,
-    [data-testid="stToolbar"],
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebar"] {
+    #MainMenu, footer {
         display: none !important;
-        visibility: hidden !important;
-    }
-    .stMainBlockContainer, .block-container,
-    [data-testid="stMainBlockContainer"] {
-        padding: 0 !important;
-        max-width: 100% !important;
     }
     .stApp {
         background-color: #F3F4F6 !important;
@@ -50,8 +51,28 @@ st.markdown("""
     iframe {
         border: none !important;
     }
+    .top-cta-box {
+        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+        color: #FFFFFF;
+        padding: 16px 24px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Prominent top launch banner
+cta_c1, cta_c2 = st.columns([3, 1])
+with cta_c1:
+    st.markdown("### 🛡️ **ClaimGuard ESG Audit Engine**")
+    st.caption("Deterministic mathematical verification against greenwashing. Test Preset 1, Preset 2, or custom CSV uploads.")
+with cta_c2:
+    if st.button("🚀 Open Audit Dashboard", type="primary", use_container_width=True):
+        st.switch_page("pages/Audit_Dashboard.py")
 
 
 # ──────────────────────────────────────────────────────────────────────
