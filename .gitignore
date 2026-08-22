@@ -7,3 +7,6 @@ __pycache__/
 
 # Streamlit config
 .streamlit/
+
+# Generated audit reports
+data/results/

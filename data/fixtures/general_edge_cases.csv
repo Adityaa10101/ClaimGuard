@@ -1,0 +1,4 @@
+metric_id,category,metric_name,unit,fy23_value,fy24_value,fy23_notes,notes
+MTR-ZERO,Emissions,Zero Baseline Metric,MT CO2e,0.00,500.00,Note with 23 in it,Zero baseline test
+MTR-NAN,General,Corrupted Value Metric,Tons,100.00,N/A,,Corrupted text in target
+MTR-SCOPES,Emissions,Scope Direct and Indirect Aggregate,MT CO2e,5000.00,4500.00,,Multiple candidates test

@@ -1,0 +1,4 @@
+metric_id,category,metric_name,unit,fy23_value,fy24_value,fy25_value,yoy_change_pct,notes
+MTR-WT01,Water,Facility Water Usage,kGal,15200.00,14900.00,14500.00,-1.97,Domestic and process water
+MTR-WT02,Water,Facility Water Withdrawal,kGal,18000.00,17500.00,17000.00,-2.78,Municipal supply withdrawal
+MTR-WT03,Water,Recycled Water Volume,kGal,2800.00,3200.00,3600.00,14.29,Treated closed loop water
