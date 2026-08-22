@@ -1250,13 +1250,7 @@ def render_landing_view():
 <div class="cg-section-title">ClaimGuard Verification Architecture</div>
 <p class="cg-section-desc">Two interfaces. One verification engine.</p>
 </div>
-<div style="background: #fafafa; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.8; color: #374151;">
-<pre style="margin: 0;">
-Streamlit UI ─────┐
-                  ├──→ Extractor → 15-Rule Deterministic Engine → AuditResult
-FastAPI API  ─────┘
-</pre>
-</div>
+<div style="background: #fafafa; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.8; color: #374151; white-space: pre-wrap;">Streamlit UI ─────┐<br>                  ├──→ Extractor → 15-Rule Deterministic Engine → AuditResult<br>FastAPI API  ─────┘</div>
 </div>""", unsafe_allow_html=True)
 
     st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
