@@ -12,11 +12,11 @@
 
 ## ⚡ 10-Second Executive Summary
 
-Corporate sustainability reports (BRSR / ESG filings) blend qualitative PR statements with quantitative tabular disclosures. When standard AI wrappers audit these documents, **Large Language Models hallucinate arithmetic**—frequently accepting false claims (e.g., a "20% emission reduction") while missing the underlying disclosures that prove actual reductions were only **2.59%**.
+Corporate sustainability reports (BRSR / ESG filings) combine qualitative PR statements with quantitative tabular disclosures. LLMs are effective at interpreting unstructured sustainability narratives, but arithmetic verification should be deterministic and reproducible.
 
-**ClaimGuard enforces a strict separation of concerns:**
-1. **Semantic Extraction (LLM)**: Groq / Llama-3 extracts entities, years, and claimed percentages into a typed Pydantic schema (`ExtractedClaim`). The LLM executes **zero arithmetic**.
-2. **Deterministic Verification (Python)**: Pure Python and Pandas dynamically resolve fiscal years and evaluate **15 hardcoded mathematical rules** against ground-truth tabular CSV metrics with a strict `0.05%` tolerance threshold.
+**ClaimGuard strictly separates responsibilities:**
+1. **Semantic Interpretation (LLM)**: Groq / Llama-3 parses natural language into typed Pydantic schemas (`ExtractedClaim`). The LLM executes zero arithmetic.
+2. **Deterministic Verification (Python)**: Pure Python and Pandas dynamically resolve fiscal years and evaluate **15 deterministic validation rules** against ground-truth tabular CSV metrics with a strict `0.05%` tolerance threshold.
 
 ---
 
@@ -45,7 +45,7 @@ Corporate sustainability reports (BRSR / ESG filings) blend qualitative PR state
 > **Two interfaces. One verification engine.**
 > - **Streamlit UI** provides the interactive audit dashboard.
 > - **FastAPI API** exposes the exact same verification engine programmatically.
-> - Both interfaces execute the same underlying extraction and verification pipeline directly.
+> - Both interfaces execute the same underlying extraction and verification pipeline directly (Streamlit does not route through FastAPI).
 
 ---
 
@@ -68,7 +68,7 @@ flowchart TD
 ```
 
 1. **Narrative Ingestion**: Ingests unstructured ESG text (PR statements, annual letter excerpts).
-2. **Schema Extraction**: Groq Llama-3 (or the offline regex fallback) strictly parses the claim into `ExtractedClaim` (`metric`, `claimed_percentage`, `baseline_year`, `target_year`, `claim_text`).
+2. **Schema Extraction**: Groq Llama-3 (or the offline fallback) parses the claim into `ExtractedClaim` (`metric`, `claimed_percentage`, `baseline_year`, `target_year`, `claim_text`).
 3. **Dynamic Evidence Resolution**: Resolves metric rows, normalizes aliases, and dynamically matches fiscal year columns (e.g., `fy23_value` → `fy24_value`, `fy24_value` → `fy25_value`).
 4. **Deterministic Evaluation**: Evaluates 15 domain rules and computes mathematical variance:
    $$\text{calculated\_delta} = \frac{V_{\text{baseline}} - V_{\text{target}}}{V_{\text{baseline}}} \times 100$$
@@ -80,7 +80,7 @@ flowchart TD
 
 ### 1. Claim Extraction
 - **Groq Llama-3 Semantic Parser**: Extracts claimed metric, claimed delta, baseline year, and target year into structured JSON schemas.
-- **Offline Fallback Parser**: Fully deterministic regex/pattern fallback when running offline or without an API key.
+- **Offline Fallback Parser**: Deterministic regex fallback keeps the audit pipeline usable when Groq is unavailable.
 
 ### 2. Ground-Truth Data Ingestion
 - **Tabular CSV / DataFrame Input**: Ingests structured disclosures (e.g., SEBI BRSR metric sheets).
@@ -160,10 +160,11 @@ ClaimGuard includes a decoupled FastAPI service exposing the verification engine
 }
 ```
 
-### Example Response
+### Example Response *(Demo A Verified)*
 
 ```json
 {
+  "status": "PASS",
   "audit_decision": "PASS",
   "execution_status": "SUCCESS",
   "claimed_percentage": 2.59,
@@ -171,12 +172,16 @@ ClaimGuard includes a decoupled FastAPI service exposing the verification engine
   "variance": 0.0,
   "tolerance": 0.05,
   "matched_metric": "Total Scope 1 & 2 Emissions",
-  "discrepancy_reason": "Verified: Claimed 2.59% reduction matches calculated delta of 2.59% from ground-truth disclosures.",
+  "baseline_year": "FY23",
+  "target_year": "FY24",
+  "baseline_value": 10500.0,
+  "target_value": 10228.05,
+  "discrepancy_reason": "VERIFIED: Claimed reduction of 2.59% for 'Total Scope 1 & 2 Emissions' matches ground-truth CSV delta of 2.59% within 0.05% tolerance (|2.59% - 2.59%| = 0.00%).",
   "summary": {
     "total_rules": 15,
-    "passed": 2,
+    "passed": 4,
     "flagged": 0,
-    "not_applicable": 13,
+    "not_applicable": 11,
     "missing_data": 0,
     "invalid_data": 0,
     "error": 0
@@ -284,7 +289,7 @@ ClaimGuard/
 ├── .gitignore                     # Git exclusion rules
 ├── app.py                         # Streamlit SPA interactive dashboard
 ├── docker-compose.yml             # Two-service stack configuration (UI + API)
-├── Dockerfile                     # Multi-stage production container image
+├── Dockerfile                     # Shared Python container image for API + UI
 ├── DOCKER.md                      # Container deployment instructions
 ├── README.md                      # Comprehensive project documentation
 ├── requirements.txt               # Pinned Python dependencies
@@ -366,11 +371,11 @@ The primary focus of the next development phase is the **PDF Auto-Audit Pipeline
 
 ## 🏆 Why ClaimGuard?
 
-1. **Deterministic Accuracy**: Eliminates LLM arithmetic hallucinations through pure Python rule validation.
-2. **15 Built-in Verification Rules**: Comprehensive coverage across Emissions, Energy, Water, and General boundaries.
+1. **Deterministic Accuracy**: Eliminates arithmetic uncertainty through pure Python rule validation.
+2. **15 Deterministic Validation Rules**: Comprehensive coverage across Emissions, Energy, Water, and General boundaries.
 3. **Explicit Decision Taxonomy**: Clear separation between `PASS`, `FLAGGED`, and `UNVERIFIED` states.
 4. **Dual Interface Support**: Interactive Streamlit UI for auditors and REST API for enterprise ERP integrations.
-5. **Zero-Config Resilience**: Automatic offline fallback ensures continuous local operation even without API keys.
+5. **Offline Resilience**: Deterministic fallback extraction keeps the audit pipeline usable when Groq is unavailable.
 
 ---
 
