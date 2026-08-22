@@ -933,6 +933,76 @@ div[data-testid="stButton"] > button[kind="secondary"]:hover {
     margin: 0;
 }
 
+/* VISUAL ARCHITECTURE FLOW DIAGRAM */
+.cg-arch-visual {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 36px 24px;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cg-arch-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.cg-arch-top {
+    max-width: 560px;
+    width: 100%;
+    gap: 80px;
+    display: flex;
+    justify-content: center;
+}
+
+.cg-arch-node {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 22px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    min-width: 220px;
+    max-width: 320px;
+    transition: all 0.2s ease;
+}
+
+.cg-arch-node:hover {
+    border-color: #0a0a0a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cg-arch-node-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.cg-arch-node-desc {
+    font-size: 0.82rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.cg-arch-svg-fork {
+    width: 100%;
+    max-width: 560px;
+    height: 40px;
+    display: block;
+}
+
+.cg-arch-mobile-connector {
+    display: none;
+}
+
 @media (max-width: 900px) {
     .cg-hero-title { font-size: 2.5rem; }
     .cg-pipeline-grid { grid-template-columns: 1fr 1fr; }
@@ -943,6 +1013,21 @@ div[data-testid="stButton"] > button[kind="secondary"]:hover {
     .cg-arch-arrow { display: none; }
     .cg-trap-container { grid-template-columns: 1fr; }
     .cg-nav-center { display: none; }
+
+    .cg-arch-top {
+        flex-direction: column;
+        gap: 0px;
+    }
+    .cg-arch-svg-fork {
+        display: none;
+    }
+    .cg-arch-mobile-connector {
+        display: block !important;
+        width: 2px;
+        height: 20px;
+        background-color: #d1d5db;
+        margin: 8px 0;
+    }
 }
 </style>""", unsafe_allow_html=True)
 
@@ -1250,7 +1335,67 @@ def render_landing_view():
 <div class="cg-section-title">ClaimGuard Verification Architecture</div>
 <p class="cg-section-desc">Two interfaces. One verification engine.</p>
 </div>
-<div style="background: #fafafa; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.8; color: #374151; white-space: pre-wrap;">Streamlit UI ─────┐<br>                  ├──→ Extractor → 15-Rule Deterministic Engine → AuditResult<br>FastAPI API  ─────┘</div>
+<div class="cg-arch-visual">
+  <!-- Top Row: Interfaces -->
+  <div class="cg-arch-row cg-arch-top">
+    <div class="cg-arch-node">
+      <div class="cg-arch-node-title">Streamlit UI</div>
+      <div class="cg-arch-node-desc">Interactive audit interface</div>
+    </div>
+
+    <!-- Mobile-only connector between Streamlit and FastAPI -->
+    <div class="cg-arch-mobile-connector"></div>
+
+    <div class="cg-arch-node">
+      <div class="cg-arch-node-title">FastAPI API</div>
+      <div class="cg-arch-node-desc">Programmatic audit interface</div>
+    </div>
+  </div>
+
+  <!-- Fork Connector (Desktop/Tablet) -->
+  <svg class="cg-arch-svg-fork" viewBox="0 0 560 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 120 0 L 120 20 L 440 20 L 440 0 M 280 20 L 280 40" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+
+  <!-- Mobile-only connector between FastAPI and Extractor -->
+  <div class="cg-arch-mobile-connector" style="margin-top: 0; margin-bottom: 8px;"></div>
+
+  <!-- Row 2: Extractor -->
+  <div class="cg-arch-row">
+    <div class="cg-arch-node">
+      <div class="cg-arch-node-title">Extractor</div>
+      <div class="cg-arch-node-desc">Semantic claim extraction</div>
+    </div>
+  </div>
+
+  <!-- Straight Arrow Connector -->
+  <svg viewBox="0 0 12 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 30px; margin: 6px 0; display: block;">
+    <line x1="6" y1="0" x2="6" y2="24" stroke="#d1d5db" stroke-width="2"/>
+    <path d="M 2 20 L 6 26 L 10 20" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <!-- Row 3: Engine -->
+  <div class="cg-arch-row">
+    <div class="cg-arch-node">
+      <div class="cg-arch-node-title">15-Rule Deterministic Engine</div>
+      <div class="cg-arch-node-desc">Deterministic mathematical verification</div>
+    </div>
+  </div>
+
+  <!-- Straight Arrow Connector -->
+  <svg viewBox="0 0 12 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 30px; margin: 6px 0; display: block;">
+    <line x1="6" y1="0" x2="6" y2="24" stroke="#d1d5db" stroke-width="2"/>
+    <path d="M 2 20 L 6 26 L 10 20" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <!-- Row 4: AuditResult -->
+  <div class="cg-arch-row">
+    <div class="cg-arch-node" style="border-color: #0a0a0a; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);">
+      <div class="cg-arch-node-title">AuditResult</div>
+      <div class="cg-arch-node-desc">PASS / FLAGGED / UNVERIFIED + evidence</div>
+    </div>
+  </div>
+</div>
 </div>""", unsafe_allow_html=True)
 
     st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
