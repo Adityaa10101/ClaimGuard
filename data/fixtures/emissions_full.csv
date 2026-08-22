@@ -1,5 +1,5 @@
-metric_id,category,metric_name,unit,fy23_value,fy24_value,fy25_value,yoy_change_pct,notes
-MTR-001,Emissions,Scope 1 Direct Emissions,MT CO2e,4200.00,4100.00,4000.00,-2.38,Fuel and company fleet
-MTR-002,Emissions,Scope 2 Indirect Emissions,MT CO2e,6300.00,6128.05,6000.00,-2.73,Purchased electricity
-MTR-TOTAL,Emissions,Total Scope 1 & 2 Emissions,MT CO2e,10500.00,10228.05,10000.00,-2.59,Combined total emissions
-MTR-005,Emissions,Scope 3 Value Chain Emissions,MT CO2e,45000.00,44100.00,43000.00,-2.00,Supply chain and logistics
+metric_id,category,metric_name,unit,fy23_value,fy24_value,fy25_value,yoy_change_pct,notes,restated_fy23_value,scope3_upstream_fy24,scope3_downstream_fy24,scope3_total_fy24,absolute_target_fy24
+MTR-001,Emissions,Scope 1 Direct Emissions,MT CO2e,4200.00,4100.00,4000.00,-2.38,Fuel and company fleet,,,,, 
+MTR-002,Emissions,Scope 2 Indirect Emissions,MT CO2e,6300.00,6128.05,6000.00,-2.73,Purchased electricity,,,,,
+MTR-TOTAL,Emissions,Total Scope 1 & 2 Emissions,MT CO2e,10500.00,10228.05,10000.00,-2.59,Combined total emissions,10500.00,,,,10228.05
+MTR-005,Emissions,Scope 3 Value Chain Emissions,MT CO2e,45000.00,44100.00,43000.00,-2.00,Supply chain and logistics,,20000.00,24100.00,44100.00,
