@@ -16,6 +16,7 @@ from src.rules.registry import RuleRegistry
 
 # Ensure water rules are imported/registered
 import src.rules.water  # noqa: F401
+RuleRegistry.auto_discover()
 
 FIXTURES_DIR = os.path.join(REPO_ROOT, "data", "fixtures")
 

@@ -1,0 +1,60 @@
+# ──────────────────────────────────────────────
+# ClaimGuard — Docker Build Exclusions
+# ──────────────────────────────────────────────
+
+# Version control
+.git
+.gitignore
+
+# Virtual environments
+.venv
+venv
+env
+
+# Python bytecode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Test / cache artifacts
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+
+# IDE / editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Secrets — NEVER include in image
+.env
+
+# Logs
+*.log
+
+# Build artifacts
+dist
+build
+*.egg-info
+
+# Frontend / unused directories
+frontend
+claimguard
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation (not needed at runtime)
+PROJECT_STATE.md
+PROJECT_STATUS.md
+DOCKER.md
+README.md
+
+# Agents / gemini config
+.agents
+.gemini

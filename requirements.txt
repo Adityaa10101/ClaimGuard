@@ -9,3 +9,7 @@ pyarrow==25.0.1
 pillow==12.3.0
 protobuf==7.36.0
 requests==2.34.2
+fastapi
+uvicorn[standard]
+httpx
+pytest

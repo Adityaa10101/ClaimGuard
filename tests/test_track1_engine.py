@@ -292,6 +292,7 @@ def test_extractor_api_failure_resilience():
 
 # 16. Multiple Rules Aggregation with Flags
 def test_multiple_rules_aggregation_with_flags():
+    old_registry = dict(RuleRegistry._registry)
     RuleRegistry.clear()
 
     @RuleRegistry.register
@@ -318,7 +319,7 @@ def test_multiple_rules_aggregation_with_flags():
         target_year="FY24"
     )
     result = verify_claim(claim, df)
-    RuleRegistry.clear()
+    RuleRegistry._registry = old_registry
 
     assert result.status == "FLAGGED"
     assert result.audit_decision == AuditDecision.FLAGGED

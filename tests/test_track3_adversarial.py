@@ -23,6 +23,7 @@ from src.rules_engine import verify_claim
 # Ensure all domain rules are imported/registered
 import src.rules.water    # noqa: F401
 import src.rules.general  # noqa: F401
+RuleRegistry.auto_discover()
 
 FIXTURES_DIR = os.path.join(REPO_ROOT, "data", "fixtures")
 CLEAN_DIR = os.path.join(REPO_ROOT, "data", "preset_clean")
