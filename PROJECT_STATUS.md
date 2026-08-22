@@ -1,111 +1,86 @@
-# ClaimGuard — Current System Status & Technical Architecture Report
+# ClaimGuard — Operational Status & System Health Report
 
-> **Document Purpose:** Complete codebase assessment, feature inventory, working components, known bugs, and technical roadmap for AI agents & developers.  
-> **Date:** August 2026 | **Repository:** `Adityaa10101/ClaimGuard`
-
----
-
-## 1. Executive Summary: What is ClaimGuard?
-
-**ClaimGuard** is a hybrid ESG & BRSR audit engine built to eliminate **corporate greenwashing and LLM arithmetic hallucinations**.
-
-### The Core Principle:
-* **LLMs** (via Groq API / Llama-3) are **strictly restricted to semantic JSON extraction** (extracting metric names, stated percentages, baseline/target years). **LLMs are forbidden from doing math.**
-* **Pure Python & Pandas** execute **100% deterministic mathematical calculations**, dynamic year mapping, and tolerance checks against ground-truth CSV metrics.
+> **Document Purpose:** Complete codebase health status, verified test outputs, component directory, resolved issues, and active roadmap.  
+> **Last Verified:** August 2026 | **Repository:** `Adityaa10101/ClaimGuard`
 
 ---
 
-## 2. Is there only a Hero Page? (Clarification)
+## 1. Executive Summary
 
-**No, there is both a Landing Page and an Interactive Audit Dashboard:**
+**ClaimGuard** is fully operational across all architectural layers. The system separates non-deterministic LLM semantic extraction from 100% deterministic Python/Pandas mathematical verification to prevent greenwashing and hallucinated reporting.
 
-1. **Landing Page (`app.py`)**:
-   - A full-width, modern landing page rendered via `st.components.v1.html`.
-   - Contains:
-     - **Hero Section** with custom graphic illustration.
-     - **The AI Greenwashing Trap** breakdown.
-     - **Architecture Timeline** (Step 1 to Step 4).
-     - **Domain Cards** (Emissions, Energy, Water, General Logic).
-     - **Roadmap Section** (PDF RAG, Microservices, 5-Year Trend Analysis).
-   - Navbar contains buttons linking to `/Audit_Dashboard`.
-
-2. **Audit Dashboard (`pages/Audit_Dashboard.py`)**:
-   - The multi-page Streamlit dashboard view.
-   - Allows users to test:
-     - **Preset 1: Clean Case** (2.59% PR claim vs 2.59% actual CSV delta $\rightarrow$ **PASS**).
-     - **Preset 2: Flagged Case** (20.00% fake PR claim vs 2.59% actual CSV delta $\rightarrow$ **FLAGGED**).
-     - **Custom Input Upload** (Type custom narrative + upload custom `metrics.csv`).
-   - Displays real-time **PASS** / **FLAGGED** status badges, mathematical variance cards, and extracted JSON inspection tabs.
+* **Deterministic Rule:** All math operations, YoY delta calculations, and tolerance checks are strictly executed in pure Python/Pandas.
+* **Resilience:** If the Groq API key is unavailable or fails, ClaimGuard automatically falls back to its offline regex extraction engine with zero system downtime.
+* **Architecture Consolidation:** The entire app is consolidated into a Single-Page Application (SPA) in `app.py`, completely eliminating the multi-page Streamlit sidebar and achieving a premium Web3 monochrome design.
+* **Sticky Navigation Bar:** Implemented a unified, persistent navigation bar that floats at the top of both the Landing and Audit views with smooth anchor navigation targeting.
 
 ---
 
-## 3. Detailed Component Inventory & Working Status
+## 2. SPA Architecture Status
 
-| Component / File | Status | Description & Mechanics |
-| :--- | :---: | :--- |
-| **`src/schemas.py`** | ✅ Working | Pydantic v2 data contracts: `ExtractedClaim` (claim extraction schema) and `AuditResult` (deterministic calculation output). |
-| **`src/extractor.py`** | ✅ Working | Hybrid semantic extractor. Primary: Groq API (`llama-3.3-70b-versatile`) in strict JSON mode. Fallback: Offline regex scanner if API key is missing. |
-| **`src/rules_engine.py`** | ✅ Working | Pure Python / Pandas calculation engine. Dynamically matches `fyXX_value` columns, calculates YoY % change, and computes variance against a 0.05% tolerance threshold. |
-| **`test_audit.py`** | ✅ Working | Automated unit tests validating Preset 1 (PASS) and Preset 2 (FLAGGED). Fully passing. |
-| **`test_dynamic_years.py`** | ✅ Working | Tests dynamic year mapping for various fiscal year headers (FY22, FY23, FY24, etc.). |
-| **`data/preset_clean/`** | ✅ Working | Ground truth CSV (`10,500.00 -> 10,228.05`) + narrative (2.59% claim). |
-| **`data/preset_flagged/`** | ✅ Working | Ground truth CSV (`10,500.00 -> 10,228.05`) + narrative (20.00% claim). |
-| **`app.py`** | ✅ Working | Streamlit landing page with responsive CSS and navigation links. |
-| **`pages/Audit_Dashboard.py`** | ✅ Working | Streamlit audit dashboard. Supports Preset 1, Preset 2, and custom uploads with real-time audit report generation. |
+| View | Access Path | Status | Features & Controls |
+| :--- | :--- | :---: | :--- |
+| **Overview Landing** | `?view=landing` | 🟢 **Healthy** | Centered layout, hero section with system status pulse dot, greenwashing trap analysis, workflow stages, concrete example verification case comparisons (Demo Case A vs B), 15 rules matrix, system architecture diagrams, and dashed roadmap elements. |
+| **Audit Engine** | `?view=audit_preset` / `?view=audit_custom` | 🟢 **Healthy** | Full audit dashboard workflow. Step 1 selects case (Preset 1 PASS, Preset 2 FLAGGED, or Custom Upload). Step 2 reviews narrative text and metrics dataframe. Step 3 triggers the pure Python audit, rendering mathematical breakdown, absolute variance, tolerance comparison, extracted JSON outputs, and formula descriptions. |
 
 ---
 
-## 4. Identified Bugs & Required Fixes
+## 3. Component Inventory & Health
 
-### ⚠️ Bug 1: Preset File Path in `pages/Audit_Dashboard.py`
-* **Issue**: Lines 126–128 use:
-  ```python
-  BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-  PRESET_CLEAN_DIR = os.path.join(BASE_DIR, "data", "preset_clean")
-  ```
-  Because `Audit_Dashboard.py` is inside `pages/`, `BASE_DIR` resolves to `ClaimGuard/pages/`, causing preset file loading to look for `ClaimGuard/pages/data/...` instead of `ClaimGuard/data/...`.
-* **Fix**: Change to parent directory:
-  ```python
-  BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-  ```
-
-### ⚠️ Bug 2: Streamlit Sidebar Hidden on Landing Page
-* **Issue**: `app.py` injects CSS `display: none !important` for `[data-testid="stSidebar"]`. This hides the default Streamlit page navigation menu.
-* **Workaround / Fix**: Users navigate via the top right navbar buttons (`/Audit_Dashboard`), or sidebar can be re-enabled for seamless page toggling.
+| Component | File Path | Status | Description |
+| :--- | :--- | :---: | :--- |
+| **Core SPA App** | [`app.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/app.py) | 🟢 **Healthy** | Ingests CSS rules, initializes state variables, dispatches views, renders the unified sticky top navbar and responsive content. |
+| **Data Schemas** | [`src/schemas.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/src/schemas.py) | 🟢 **Passing** | Pydantic v2 data models for `ExtractedClaim` and `AuditResult`. |
+| **Semantic Extractor** | [`src/extractor.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/src/extractor.py) | 🟢 **Passing** | Hybrid LLM (`llama-3.3-70b-versatile` via Groq) + Offline Regex fallback scanner. |
+| **Audit Engine** | [`src/rules_engine.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/src/rules_engine.py) | 🟢 **Passing** | Pure Python/Pandas deterministic calculator with dynamic fiscal year column matching and 0.05% tolerance threshold. |
+| **Preset Clean Data** | [`data/preset_clean/`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/data/preset_clean/) | 🟢 **Passing** | Clean test dataset (2.59% PR claim vs 2.59% CSV delta). |
+| **Preset Flagged Data** | [`data/preset_flagged/`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/data/preset_flagged/) | 🟢 **Passing** | Flagged greenwashing test dataset (20.00% PR claim vs 2.59% CSV delta). |
+| **Core Test Suite** | [`test_audit.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/test_audit.py) | 🟢 **Passing** | Automated validation of Preset 1 and Preset 2 scenarios. |
+| **Dynamic Years Suite**| [`test_dynamic_years.py`](file:///c:/Users/Lenovo/Desktop/CLAIMGUARD/ClaimGuard/test_dynamic_years.py) | 🟢 **Passing** | Automated validation of arbitrary fiscal year headers (FY24 $\rightarrow$ FY25). |
 
 ---
 
-## 5. End-to-End Execution Flow
+## 4. Test Suite Execution Results
+
+All automated test suites pass with 100% success rate:
 
 ```
-[User Input: Narrative Text & CSV]
-               │
-               ▼
-   [src/extractor.py]
-   • Groq Llama-3 API (Strict JSON mode)
-   • Offline Regex Scanner (Fallback)
-               │
-               ▼ ExtractedClaim JSON
-   [src/rules_engine.py]
-   • Pandas dynamic column detection (e.g. fy23_value, fy24_value)
-   • Pure Python Formula: ((Baseline - Target) / Baseline) * 100
-   • Variance Calculation: |Claimed% - Calculated%|
-   • Tolerance: <= 0.05%
-               │
-               ▼ AuditResult Object
-   [pages/Audit_Dashboard.py]
-   • Green "PASS" or Red "FLAGGED" badge
-   • Metric breakdown cards & JSON inspection tabs
+$ python test_audit.py
+--- Testing Preset 1: Clean ---
+Extracted Claim: {'metric': 'Total Scope 1 & 2 Emissions', 'claimed_percentage': 2.59, 'baseline_year': 'FY23', 'target_year': 'FY24'}
+Audit Result: {'status': 'PASS', 'claimed_percentage': 2.59, 'calculated_delta': 2.59, 'variance': 0.0, 'discrepancy_reason': 'VERIFIED: The claimed 2.59% reduction matches the ground truth CSV data exactly...'}
+Preset 1 Test PASSED!
+
+--- Testing Preset 2: Flagged ---
+Extracted Claim: {'metric': 'Total Scope 1 & 2 Emissions', 'claimed_percentage': 20.0, 'baseline_year': 'FY23', 'target_year': 'FY24'}
+Audit Result: {'status': 'FLAGGED', 'claimed_percentage': 20.0, 'calculated_delta': 2.59, 'variance': 17.41, 'discrepancy_reason': 'MATHEMATICAL DISCREPANCY DETECTED: PR narrative claims a 20.00% reduction, but pure Python audit calculates only a 2.59% reduction...'}
+Preset 2 Test PASSED!
+
+ALL UNIT TESTS PASSED SUCCESSFULLY!
+
+$ python test_dynamic_years.py
+Clean FY24->FY25 Audit Result: {'status': 'PASS', 'variance': 0.0}
+Flagged FY24->FY25 Audit Result: {'status': 'FLAGGED', 'variance': 15.0}
+DYNAMIC YEARS TEST PASSED PERFECTLY!
 ```
 
 ---
 
-## 6. Recommended Next Steps for Development / AI Collaborators
+## 5. Resolved Fixes & Improvements
 
-1. **Fix Preset Pathing in `pages/Audit_Dashboard.py`**: Update `BASE_DIR` to point to root directory so preset buttons load CSVs and narratives immediately.
-2. **Expand Multi-Claim Support**: Currently, `src/extractor.py` extracts a single main claim. Upgrade to extract a list of claims (`List[ExtractedClaim]`) from a single multi-paragraph narrative.
-3. **Add Additional Domain Rules**:
-   - Renewable energy percentage cross-check (`Renewable / Total Energy * 100`).
-   - Water recycling ratio verification.
-   - Scope 1 + Scope 2 = Total Scope 1 & 2 subtotal validation.
-4. **Export Capabilities**: Add a "Download Audit Report (PDF/JSON)" button in `pages/Audit_Dashboard.py`.
+1. **SPA Router Integration**: Leveraged `st.session_state` and `st.query_params` to switch between landing, preset audit, and custom audit views seamlessly without forcing page reloads or revealing Streamlit's default navigation sidebar.
+2. **Sticky Navigation Bar (Fixed Wrapper)**: Solved Streamlit element scroll bounding issues by targeting `position: fixed` on a dedicated `.cg-navbar-wrapper` element with `z-index: 999999` and wrapping navigation markup, ensuring consistent visibility while scrolling.
+3. **Anchor Headings Scroll Offset**: Applied `scroll-margin-top: 130px` to all landing page sections so that clicking top links smoothly scrolls headings right below the fixed navbar header.
+4. **Resilient Offline Fallback**: Confirmed that offline regex extraction immediately handles claims when Groq API keys are absent or invalid without throwing exceptions.
+
+---
+
+## 6. Active Roadmap & Future Enhancements
+
+1. **Multi-Claim Batch Extraction**: Extend `src/extractor.py` to parse multiple claims per narrative document (`List[ExtractedClaim]`).
+2. **Domain-Specific Rules Expansion**:
+   - Scope 1 + Scope 2 total summation cross-validation.
+   - Renewable energy ratio verification ($\text{Renewable} / \text{Total Energy} \times 100$).
+   - Water recycling & reuse percentage checks.
+3. **Audit Report Export**: Add PDF / CSV / JSON report export buttons to the Audit Dashboard.
+4. **PDF / BRSR Document Parser**: Ingestion pipeline for full PDF sustainability reports with automated table extraction.

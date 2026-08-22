@@ -1,871 +1,1523 @@
-import streamlit as st
-import base64
 import os
+import streamlit as st
+import pandas as pd
+from dotenv import load_dotenv
+from src.extractor import extract_claim_from_narrative
+from src.rules_engine import verify_claim
+
+# Load environment variables (.env)
+load_dotenv()
 
 # ──────────────────────────────────────────────────────────────────────
-# PAGE CONFIGURATION
+# PAGE CONFIGURATION (SPA)
 # ──────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="ClaimGuard — Deterministic ESG Auditing",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ──────────────────────────────────────────────────────────────────────
-# SIDEBAR NAVIGATION & TOP CTA
+# STRICT LIGHT THEME & GLOBAL RESET CSS
 # ──────────────────────────────────────────────────────────────────────
-st.sidebar.image("https://img.icons8.com/isometric/100/shield-gradient.png", width=64)
-st.sidebar.title("ClaimGuard")
-st.sidebar.page_link("app.py", label="🏠 Overview & Architecture", icon=None)
-st.sidebar.page_link("pages/Audit_Dashboard.py", label="🚀 Launch Audit Engine (Presets & Upload)", icon=None)
-st.sidebar.markdown("---")
-st.sidebar.info("💡 **Tip:** Click **'Launch Audit Engine'** above to test Preset 1, Preset 2, or upload custom data.")
+st.markdown("""<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-# ──────────────────────────────────────────────────────────────────────
-# LOAD HERO IMAGE AS BASE64
-# ──────────────────────────────────────────────────────────────────────
-@st.cache_data
-def load_image_b64(path):
-    """Load a local image and encode it as base64 for HTML embedding."""
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-    return ""
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-hero_b64 = load_image_b64(os.path.join(BASE_DIR, "assets", "hero-illustration.jpg"))
-
-
-# ──────────────────────────────────────────────────────────────────────
-# STYLING (Preserve Sidebar & Standard Controls)
-# ──────────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-    #MainMenu, footer {
-        display: none !important;
-    }
-    .stApp {
-        background-color: #F3F4F6 !important;
-    }
-    iframe {
-        border: none !important;
-    }
-    .top-cta-box {
-        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-        color: #FFFFFF;
-        padding: 16px 24px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Prominent top launch banner
-cta_c1, cta_c2 = st.columns([3, 1])
-with cta_c1:
-    st.markdown("### 🛡️ **ClaimGuard ESG Audit Engine**")
-    st.caption("Deterministic mathematical verification against greenwashing. Test Preset 1, Preset 2, or custom CSV uploads.")
-with cta_c2:
-    if st.button("🚀 Open Audit Dashboard", type="primary", use_container_width=True):
-        st.switch_page("pages/Audit_Dashboard.py")
-
-
-# ──────────────────────────────────────────────────────────────────────
-# FULL LANDING PAGE (via st.components.v1.html for full HTML support)
-# ──────────────────────────────────────────────────────────────────────
-
-LANDING_PAGE_HTML = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-<style>
-/* ===== RESET ===== */
-*, *::before, *::after {{
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}}
-
-html {{
+/* Smooth scrolling and anchor offset for fixed/sticky navigation */
+html {
     scroll-behavior: smooth;
-}}
+}
 
-body {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1F2937;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background: #F3F4F6;
-    overflow-x: hidden;
-}}
+section[id], div[id] {
+    scroll-margin-top: 130px !important;
+}
 
-a {{ text-decoration: none; }}
+/* Forcefully hide Streamlit default sidebar and header chrome */
+[data-testid="stSidebar"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
+header { visibility: hidden !important; height: 0 !important; }
+footer { visibility: hidden !important; }
+#MainMenu { visibility: hidden !important; }
 
-.cg-container {{
+/* Global App Container — Strict Light Theme & Typography Scale */
+.stApp {
+    background-color: #ffffff !important;
+    color: #0a0a0a !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 1.05rem;
+}
+
+.main {
+    overflow: visible !important;
+}
+
+.main .block-container {
+    padding-top: 5.5rem !important;
+    padding-bottom: 4rem !important;
+    max-width: 1200px !important;
+    overflow: visible !important;
+}
+
+/* Universal Link Styling — Zero Default Underlines */
+a, a:hover, a:focus, a:active, a:visited {
+    text-decoration: none !important;
+}
+
+/* Reusable Section Spacing System & Master Grid Alignment */
+.section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 40px;
-}}
+    padding: 70px 24px;
+    box-sizing: border-box;
+}
 
-/* ===== NAVBAR ===== */
-.cg-navbar {{
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    background: rgba(255, 255, 255, 0.97);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid #E5E7EB;
-    height: 64px;
-}}
+.hero-section {
+    padding: 10px 24px 35px 24px;
+}
 
-.cg-nav-inner {{
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 40px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}}
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #0a0a0a !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+}
 
-.cg-nav-brand {{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}}
+/* Ensure Material Icon ligatures are preserved and never overridden by plain text */
+[data-testid="stIconMaterial"],
+[data-testid="stIcon"],
+.material-icons,
+.material-symbols-rounded,
+.material-symbols-outlined,
+[class*="material-symbols"],
+[class*="material-icons"] {
+    font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
+}
 
-.cg-nav-brand svg {{
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-}}
+/* Native Streamlit Buttons (Pills) */
+.stButton > button {
+    border-radius: 9999px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+}
 
-.cg-brand-text {{
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #111827;
-    letter-spacing: -0.02em;
-}}
+.stButton > button[kind="primary"],
+div[data-testid="stButton"] > button[kind="primary"] {
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 32px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
 
-.cg-nav-actions {{
+.stButton > button[kind="primary"]:hover,
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background-color: #262626 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stButton > button[kind="secondary"],
+div[data-testid="stButton"] > button[kind="secondary"] {
+    background-color: #ffffff !important;
+    color: #0a0a0a !important;
+    border: 1px solid #e5e5e5 !important;
+    padding: 10px 24px !important;
+}
+
+.stButton > button[kind="secondary"]:hover,
+div[data-testid="stButton"] > button[kind="secondary"]:hover {
+    background-color: #f9fafb !important;
+    border-color: #0a0a0a !important;
+}
+
+/* Fixed/Sticky Top Navbar Container — Smoothly persists across entire scroll */
+.cg-navbar-wrapper {
+    position: fixed !important;
+    top: 14px !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    padding: 0 24px !important;
+}
+
+.cg-navbar {
+    width: 100% !important;
+    max-width: 1200px !important;
+    pointer-events: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 24px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+    margin: 0 auto !important;
+}
+
+.cg-nav-left {
     display: flex;
     align-items: center;
     gap: 12px;
-}}
+    text-decoration: none !important;
+}
 
-.cg-btn-ghost {{
+.cg-logo-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cg-logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.cg-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.cg-tagline {
+    font-size: 0.72rem;
+    color: #6b7280;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+.cg-nav-center {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f9fafb;
+    padding: 4px;
+    border-radius: 9999px;
+    border: 1px solid #f3f4f6;
+}
+
+.cg-nav-pill {
+    padding: 7px 18px;
+    border-radius: 9999px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.cg-nav-pill:hover {
+    color: #0a0a0a;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.cg-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cg-nav-action-sec {
+    padding: 8px 18px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #0a0a0a;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.cg-nav-action-sec:hover {
+    background: #f9fafb;
+    border-color: #0a0a0a;
+}
+
+.cg-nav-action-pri {
+    padding: 8px 22px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    background: #0a0a0a !important;
+    border: none;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.cg-nav-action-pri:hover {
+    background: #262626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    color: #ffffff !important;
+}
+
+/* HERO SECTION (CENTERED & BALANCED) */
+.cg-hero-container {
+    text-align: center;
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.cg-hero-badge-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.15rem;
+}
+
+.cg-micro-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 9px 18px;
-    border: 1px solid #D1D5DB;
-    border-radius: 8px;
-    background: transparent;
-    color: #374151;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
+    gap: 8px;
+    padding: 6px 18px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.84rem;
     font-weight: 500;
+    color: #374151;
+    letter-spacing: 0.01em;
+}
+
+.cg-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.cg-hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    color: #0a0a0a;
+    margin: 0 0 1.1rem 0;
+}
+
+.cg-gradient-accent {
+    color: #0a0a0a;
+    display: inline-block;
+}
+
+.cg-hero-subtitle {
+    font-size: 1.18rem;
+    line-height: 1.65;
+    color: #4b5563;
+    max-width: 720px;
+    margin: 0 auto 1.8rem auto;
+    font-weight: 400;
+}
+
+/* CTA ACTION BUTTONS */
+.cg-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 1.75rem;
+}
+
+.cg-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    padding: 13px 32px;
+    border-radius: 9999px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    background: #0a0a0a !important;
+    border: none;
+    text-decoration: none !important;
     cursor: pointer;
     transition: all 0.2s ease;
-}}
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
 
-.cg-btn-ghost:hover {{
-    background: #F3F4F6;
-    border-color: #9CA3AF;
-    color: #111827;
-}}
+.cg-btn-primary:hover {
+    background: #262626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    color: #ffffff !important;
+}
 
-.cg-btn-ghost svg {{
-    width: 15px;
-    height: 15px;
-    stroke: currentColor;
-}}
-
-.cg-btn-primary {{
+.cg-btn-secondary {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 9px 22px;
-    border: none;
-    border-radius: 8px;
-    background: #2563EB;
-    color: #FFFFFF;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
-}}
-
-.cg-btn-primary:hover {{
-    background: #1D4ED8;
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
-    transform: translateY(-1px);
-    color: #FFFFFF;
-}}
-
-/* ===== HERO ===== */
-.cg-hero {{
-    padding: 130px 0 90px;
-    background: #F3F4F6;
-    position: relative;
-    overflow: hidden;
-}}
-
-.cg-hero::before {{
-    content: '';
-    position: absolute;
-    top: -200px;
-    right: -150px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}}
-
-.cg-hero-grid {{
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 60px;
-    align-items: center;
-}}
-
-.cg-hero-content {{
-    animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}}
-
-.cg-hero h1 {{
-    font-size: 3.1rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: #111827;
-    letter-spacing: -0.03em;
-    margin-bottom: 22px;
-}}
-
-.cg-hero-sub {{
-    font-size: 1.1rem;
-    color: #4B5563;
-    line-height: 1.75;
-    max-width: 540px;
-}}
-
-.cg-hero-illustration {{
-    display: flex;
     justify-content: center;
-    animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
-}}
-
-.cg-hero-img {{
-    width: 100%;
-    max-width: 500px;
-    border-radius: 16px;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.08));
-}}
-
-/* ===== PROBLEM SECTION (DARK) ===== */
-.cg-problem {{
-    padding: 100px 0;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
-    color: #FFFFFF;
-    position: relative;
-    overflow: hidden;
-}}
-
-.cg-problem::before {{
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -15%;
-    width: 550px;
-    height: 550px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}}
-
-.cg-problem h2 {{
-    font-size: 2.6rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    margin-bottom: 12px;
-    position: relative;
-}}
-
-.cg-problem-sub {{
-    font-size: 1.2rem;
-    color: #94A3B8;
+    gap: 8px;
+    white-space: nowrap;
+    padding: 13px 30px;
+    border-radius: 9999px;
+    font-size: 0.98rem;
     font-weight: 500;
-    margin-bottom: 32px;
-    font-style: italic;
-    position: relative;
-}}
-
-.cg-problem-body {{
-    font-size: 1.0625rem;
-    color: #CBD5E1;
-    line-height: 1.85;
-    max-width: 820px;
-    position: relative;
-}}
-
-/* ===== ARCHITECTURE TIMELINE ===== */
-.cg-architecture {{
-    padding: 100px 0;
-    background: #F3F4F6;
-}}
-
-.cg-architecture h2 {{
-    font-size: 2.3rem;
-    font-weight: 800;
-    color: #111827;
-    letter-spacing: -0.025em;
-    margin-bottom: 64px;
-    text-align: center;
-}}
-
-.cg-timeline {{
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    position: relative;
-    padding: 0 10px;
-}}
-
-.cg-timeline::before {{
-    content: '';
-    position: absolute;
-    top: 32px;
-    left: 12%;
-    right: 12%;
-    height: 3px;
-    background: linear-gradient(90deg, #2563EB 0%, #06B6D4 33%, #10B981 66%, #8B5CF6 100%);
-    border-radius: 4px;
-    z-index: 0;
-}}
-
-.cg-timeline-step {{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    flex: 1;
-    position: relative;
-    z-index: 1;
+    color: #0a0a0a !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e5e5;
+    text-decoration: none !important;
     cursor: pointer;
-    padding: 0 12px;
-}}
+    transition: all 0.2s ease;
+}
 
-.cg-step-icon {{
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    border: 2.5px solid #E5E7EB;
+.cg-btn-secondary:hover {
+    background: #f9fafb !important;
+    border-color: #0a0a0a;
+    color: #0a0a0a !important;
+    transform: translateY(-2px);
+}
+
+/* FEATURE PILLS ROW */
+.cg-features-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    margin-bottom: 18px;
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}}
+    gap: 10px;
+    max-width: 880px;
+    margin: 0 auto 1.25rem auto;
+}
 
-.cg-step-icon svg {{
-    width: 26px;
-    height: 26px;
-    stroke: #6B7280;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: stroke 0.3s ease;
-}}
+.cg-feature-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e5e5;
+    border-radius: 9999px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.2s ease;
+}
 
-.cg-timeline-step:hover .cg-step-icon {{
-    border-color: #2563EB;
-    background: #EFF6FF;
-    box-shadow: 0 6px 24px rgba(37, 99, 235, 0.2);
-    transform: scale(1.12);
-}}
+.cg-feature-pill:hover {
+    background: #ffffff;
+    border-color: #0a0a0a;
+    color: #0a0a0a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
 
-.cg-timeline-step:hover .cg-step-icon svg {{
-    stroke: #2563EB;
-}}
+.cg-hero-flow-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: #ffffff;
+    border: 1px dashed #d1d5db;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #4b5563;
+}
 
-.cg-step-label {{
-    font-size: 0.7rem;
+/* SECTIONS */
+.cg-section-divider {
+    border: none;
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0;
+}
+
+.cg-section-header {
+    text-align: center;
+    max-width: 860px;
+    margin: 0 auto 2.25rem auto;
+}
+
+.cg-section-tag {
+    font-size: 0.78rem;
     font-weight: 700;
-    color: #9CA3AF;
+    color: #0a0a0a;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: 6px;
-}}
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
 
-.cg-step-title {{
-    font-size: 1rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 6px;
-    transition: color 0.3s ease;
-}}
-
-.cg-timeline-step:hover .cg-step-title {{
-    color: #2563EB;
-}}
-
-.cg-step-detail {{
-    font-size: 0.85rem;
-    color: #6B7280;
-    line-height: 1.6;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.35s ease 0.05s;
-    max-width: 220px;
-}}
-
-.cg-timeline-step:hover .cg-step-detail {{
-    max-height: 160px;
-    opacity: 1;
-}}
-
-/* ===== VERIFICATION CARDS ===== */
-.cg-verification {{
-    padding: 100px 0;
-    background: #FFFFFF;
-}}
-
-.cg-verification h2 {{
-    font-size: 2.3rem;
+.cg-section-title {
+    font-size: 2.15rem;
     font-weight: 800;
-    color: #111827;
+    color: #0a0a0a;
     letter-spacing: -0.025em;
-    margin-bottom: 52px;
-    text-align: center;
-}}
+    margin-bottom: 10px;
+}
 
-.cg-cards-grid {{
+.cg-section-desc {
+    font-size: 1.08rem;
+    color: #6b7280;
+    max-width: 680px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* PIPELINE WORKFLOW (01 -> 02 -> 03 -> 04) */
+.cg-pipeline-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-}}
+    gap: 16px;
+}
 
-.cg-card {{
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    padding: 28px 24px;
-    cursor: default;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.35s ease;
-}}
-
-.cg-card:hover {{
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.12),
-                0 4px 12px rgba(0, 0, 0, 0.04);
-}}
-
-.cg-card-icon {{
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 18px;
-}}
-
-.cg-card-icon svg {{
-    width: 24px;
-    height: 24px;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}}
-
-.cg-emissions {{ background: #FEE2E2; }}
-.cg-emissions svg {{ stroke: #DC2626; }}
-.cg-energy {{ background: #FEF3C7; }}
-.cg-energy svg {{ stroke: #D97706; }}
-.cg-water {{ background: #DBEAFE; }}
-.cg-water svg {{ stroke: #2563EB; }}
-.cg-logic {{ background: #E0E7FF; }}
-.cg-logic svg {{ stroke: #4F46E5; }}
-
-.cg-card h3 {{
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 10px;
-}}
-
-.cg-card p {{
-    font-size: 0.875rem;
-    color: #6B7280;
-    line-height: 1.65;
-}}
-
-/* ===== ROADMAP ===== */
-.cg-roadmap {{
-    padding: 100px 0;
-    background: #F3F4F6;
-}}
-
-.cg-roadmap h2 {{
-    font-size: 2.3rem;
-    font-weight: 800;
-    color: #111827;
-    letter-spacing: -0.025em;
-    margin-bottom: 52px;
-    text-align: center;
-}}
-
-.cg-roadmap-list {{
-    max-width: 740px;
-    margin: 0 auto;
+.cg-pipeline-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px;
+    transition: all 0.25s ease;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-}}
+    height: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
 
-.cg-roadmap-item {{
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 28px;
-    background: #FFFFFF;
-    border-radius: 12px;
-    border: 1px solid #E5E7EB;
-    transition: all 0.35s ease;
-    opacity: 0;
-    transform: translateX(-24px);
-    animation: staggerSlideIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}}
+.cg-pipeline-card:hover {
+    border-color: #0a0a0a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
 
-.cg-roadmap-item:nth-child(1) {{ animation-delay: 0.1s; }}
-.cg-roadmap-item:nth-child(2) {{ animation-delay: 0.28s; }}
-.cg-roadmap-item:nth-child(3) {{ animation-delay: 0.46s; }}
-
-.cg-roadmap-item:hover {{
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
-    transform: translateX(6px);
-}}
-
-.cg-roadmap-icon {{
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+.cg-pipeline-badge-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}}
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
 
-.cg-roadmap-icon svg {{
-    width: 24px;
-    height: 24px;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}}
+.cg-step-num {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+}
 
-.cg-pdf {{ background: #DBEAFE; }}
-.cg-pdf svg {{ stroke: #2563EB; }}
-.cg-api {{ background: #D1FAE5; }}
-.cg-api svg {{ stroke: #059669; }}
-.cg-trend {{ background: #EDE9FE; }}
-.cg-trend svg {{ stroke: #7C3AED; }}
+.cg-step-arrow {
+    font-size: 0.88rem;
+    color: #9ca3af;
+    font-weight: 600;
+}
 
-.cg-roadmap-content h3 {{
+/* CARDS GENERAL */
+.cg-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.cg-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.cg-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.cg-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.cg-card:hover {
+    border-color: #0a0a0a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.cg-card-secondary {
+    background: #fafafa;
+    border: 1px dashed #d1d5db;
+    border-radius: 14px;
+    padding: 22px;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cg-card-secondary:hover {
+    border-color: #9ca3af;
+    background: #fdfdfd;
+}
+
+.cg-step-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.cg-card-title {
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.cg-card-desc {
+    font-size: 0.94rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.cg-rule-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+}
+
+.cg-rule-item {
+    font-size: 0.88rem;
+    color: #4b5563;
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+    border-top: 1px solid #f3f4f6;
+}
+
+.cg-rule-bullet {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.cg-badge-mvp {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: #0a0a0a;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.cg-badge-roadmap {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: #e5e7eb;
+    color: #4b5563;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.cg-badge-future {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4b5563;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.cg-badge-count {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: #0a0a0a;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* ARCHITECTURE PIPELINE BOXES */
+.cg-arch-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 1rem 0;
+}
+
+.cg-arch-box {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+}
+
+.cg-arch-box h4 {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #111827;
-    margin-bottom: 6px;
-}}
+    color: #0a0a0a;
+    margin: 0 0 6px 0;
+}
 
-.cg-roadmap-content p {{
+.cg-arch-box p {
     font-size: 0.9rem;
-    color: #6B7280;
-    line-height: 1.7;
-}}
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
 
-/* ===== FOOTER ===== */
-.cg-footer {{
-    padding: 36px 0;
-    background: #FFFFFF;
-    border-top: 1px solid #E5E7EB;
+.cg-arch-arrow {
+    font-size: 1.35rem;
+    color: #9ca3af;
+    font-weight: 700;
     text-align: center;
-}}
+}
 
-.cg-footer p {{
-    font-size: 0.875rem;
-    color: #9CA3AF;
-    font-weight: 400;
-}}
+/* TRAP & SOLUTION */
+.cg-trap-container {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 26px;
+    margin: 1rem 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+}
 
-/* ===== ANIMATIONS ===== */
-@keyframes heroFadeUp {{
-    from {{ opacity: 0; transform: translateY(32px); }}
-    to {{ opacity: 1; transform: translateY(0); }}
-}}
+.cg-trap-side {
+    background: #ffffff;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 12px;
+    padding: 22px;
+}
 
-@keyframes staggerSlideIn {{
-    from {{ opacity: 0; transform: translateX(-24px); }}
-    to {{ opacity: 1; transform: translateX(0); }}
-}}
+.cg-trap-side h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #991b1b;
+}
 
-/* ===== SCROLL ANIMATIONS ===== */
-.cg-animate {{
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-}}
+.cg-sol-side {
+    background: #ffffff;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #10b981;
+    border-radius: 12px;
+    padding: 22px;
+}
 
-.cg-animate.cg-visible {{
-    opacity: 1;
-    transform: translateY(0);
-}}
+.cg-sol-side h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #166534;
+}
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {{
-    .cg-hero-grid {{ grid-template-columns: 1fr; gap: 40px; }}
-    .cg-hero h1 {{ font-size: 2.5rem; }}
-    .cg-cards-grid {{ grid-template-columns: repeat(2, 1fr); }}
-    .cg-timeline {{ flex-direction: column; align-items: center; gap: 32px; }}
-    .cg-timeline::before {{ display: none; }}
-    .cg-step-detail {{ max-height: none; opacity: 1; }}
-    .cg-container {{ padding: 0 24px; }}
-}}
+.cg-trap-text {
+    font-size: 0.94rem;
+    color: #374151;
+    line-height: 1.6;
+    margin: 0;
+}
 
-@media (max-width: 640px) {{
-    .cg-hero {{ padding: 110px 0 60px; }}
-    .cg-hero h1 {{ font-size: 2rem; }}
-    .cg-problem h2, .cg-architecture h2,
-    .cg-verification h2, .cg-roadmap h2 {{ font-size: 1.8rem; }}
-    .cg-cards-grid {{ grid-template-columns: 1fr; }}
-    .cg-nav-inner {{ padding: 0 16px; }}
-    .cg-container {{ padding: 0 18px; }}
-    .cg-problem, .cg-architecture,
-    .cg-verification, .cg-roadmap {{ padding: 70px 0; }}
-}}
-</style>
-</head>
+/* EXAMPLE VERIFICATION SHOWCASE */
+.cg-example-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
 
-<body>
+.cg-example-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+}
 
-    <!-- ═══════════ NAVBAR ═══════════ -->
-    <nav class="cg-navbar">
-        <div class="cg-nav-inner">
-            <div class="cg-nav-brand">
-                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 2L4 7v8c0 7.18 5.12 13.84 12 15 6.88-1.16 12-7.82 12-15V7L16 2z" fill="#2563EB" fill-opacity="0.12" stroke="#2563EB" stroke-width="2"/>
-                    <path d="M11.5 16l3 3 6-6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
-                <span class="cg-brand-text">ClaimGuard</span>
-            </div>
-            <div class="cg-nav-actions">
-                <a href="/Audit_Dashboard" class="cg-btn-ghost" target="_parent">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                        <path d="M8 12V3M8 3L4.5 6.5M8 3l3.5 3.5M2 14h12"/>
-                    </svg>
-                    Upload
-                </a>
-                <a href="/Audit_Dashboard" class="cg-btn-primary" target="_parent">View Results</a>
-            </div>
-        </div>
-    </nav>
+.cg-example-claim-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.92rem;
+    color: #374151;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    font-style: italic;
+}
 
-    <!-- ═══════════ SECTION 1: HERO ═══════════ -->
-    <section class="cg-hero" id="hero">
-        <div class="cg-container cg-hero-grid">
-            <div class="cg-hero-content">
-                <h1>Welcome to ClaimGuard: Deterministic ESG Auditing</h1>
-                <p class="cg-hero-sub">
-                    Eliminating the ESG greenwashing trap by pairing LLM semantic claim extraction
-                    with pure Python deterministic mathematical verification. Never trust an AI
-                    to do the math &mdash; verify it deterministically.
-                </p>
-            </div>
-            <div class="cg-hero-illustration">
-                <img class="cg-hero-img" src="data:image/jpeg;base64,{hero_b64}" alt="ClaimGuard illustration">
-            </div>
-        </div>
-    </section>
+.cg-example-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
 
-    <!-- ═══════════ SECTION 2: THE PROBLEM (DARK) ═══════════ -->
-    <section class="cg-problem cg-animate" id="problem">
-        <div class="cg-container">
-            <h2>The AI Greenwashing Trap</h2>
-            <p class="cg-problem-sub">Why standard LLMs fail at compliance auditing.</p>
-            <p class="cg-problem-body">
-                Corporate sustainability reports are filled with qualitative PR narratives that
-                often mask the actual tabular data. While GenAI is incredible at reading these
-                narratives, standard LLMs hallucinate arithmetic. You cannot trust an LLM to
-                calculate a Year-over-Year emissions delta. ClaimGuard solves this by bridging
-                the gap between semantic understanding and deterministic truth.
-            </p>
-        </div>
-    </section>
+.cg-stat-box {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
 
-    <!-- ═══════════ SECTION 3: ARCHITECTURE TIMELINE ═══════════ -->
-    <section class="cg-architecture cg-animate" id="architecture">
-        <div class="cg-container">
-            <h2>Semantic Extraction meets Deterministic Math.</h2>
-            <div class="cg-timeline">
-                <div class="cg-timeline-step">
-                    <div class="cg-step-icon">
-                        <svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 13H8"/><path d="M16 17H8"/><path d="M16 13h-2"/></svg>
-                    </div>
-                    <span class="cg-step-label">Step 1</span>
-                    <span class="cg-step-title">Unstructured Ingestion</span>
-                    <p class="cg-step-detail">Feed in PR narratives and ground-truth tabular CSVs (like SEBI BRSR filings).</p>
-                </div>
-                <div class="cg-timeline-step">
-                    <div class="cg-step-icon">
-                        <svg viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></svg>
-                    </div>
-                    <span class="cg-step-label">Step 2</span>
-                    <span class="cg-step-title">LLM JSON Extraction</span>
-                    <p class="cg-step-detail">Llama-3 via Groq parses the text into strict schemas, isolating the metric, baseline, and claimed reduction percentage. Zero math is performed here.</p>
-                </div>
-                <div class="cg-timeline-step">
-                    <div class="cg-step-icon">
-                        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 10h2"/><path d="M14 10h2"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h8"/></svg>
-                    </div>
-                    <span class="cg-step-label">Step 3</span>
-                    <span class="cg-step-title">Dynamic Pandas Verification</span>
-                    <p class="cg-step-detail">Our pure Python engine maps the extracted years to the CSV headers and calculates the exact formulas dynamically.</p>
-                </div>
-                <div class="cg-timeline-step">
-                    <div class="cg-step-icon">
-                        <svg viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
-                    </div>
-                    <span class="cg-step-label">Step 4</span>
-                    <span class="cg-step-title">Evidence &amp; Audit Trails</span>
-                    <p class="cg-step-detail">Generates an immutable, JSON-backed audit report highlighting the exact mathematical variance.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+.cg-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+}
 
-    <!-- ═══════════ SECTION 4: VERIFICATION CARDS ═══════════ -->
-    <section class="cg-verification cg-animate" id="verification">
-        <div class="cg-container">
-            <h2>Comprehensive ESG Validation Domains</h2>
-            <div class="cg-cards-grid">
-                <div class="cg-card">
-                    <div class="cg-card-icon cg-emissions">
-                        <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-                    </div>
-                    <h3>Emissions Engine</h3>
-                    <p>Validates absolute change, percentage drops, and Scope 1 &amp; 2 subtotal consistency against ground-truth CSV data.</p>
-                </div>
-                <div class="cg-card">
-                    <div class="cg-card-icon cg-energy">
-                        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    </div>
-                    <h3>Energy Engine</h3>
-                    <p>Cross-checks renewable energy ratios against total energy consumption limits and validates percentage bounds.</p>
-                </div>
-                <div class="cg-card">
-                    <div class="cg-card-icon cg-water">
-                        <svg viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
-                    </div>
-                    <h3>Water Engine</h3>
-                    <p>Audits withdrawal variances and facility water recycling percentages to ensure metric integrity.</p>
-                </div>
-                <div class="cg-card">
-                    <div class="cg-card-icon cg-logic">
-                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                    </div>
-                    <h3>General Logic</h3>
-                    <p>Enforces period alignment, unit consistency, and absolute mathematical bounds (e.g., flagging &gt;100% reductions).</p>
-                </div>
-            </div>
-        </div>
-    </section>
+.cg-stat-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    font-family: 'JetBrains Mono', monospace;
+}
 
-    <!-- ═══════════ SECTION 5: ROADMAP ═══════════ -->
-    <section class="cg-roadmap cg-animate" id="roadmap">
-        <div class="cg-container">
-            <h2>Built for Enterprise Scale</h2>
-            <div class="cg-roadmap-list">
-                <div class="cg-roadmap-item">
-                    <div class="cg-roadmap-icon cg-pdf">
-                        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                    </div>
-                    <div class="cg-roadmap-content">
-                        <h3>Full PDF RAG Pipelines</h3>
-                        <p>Transitioning from text snippets to ingesting 150-page SEBI reports autonomously using Retrieval-Augmented Generation and OCR extraction pipelines.</p>
-                    </div>
-                </div>
-                <div class="cg-roadmap-item">
-                    <div class="cg-roadmap-icon cg-api">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="18" r="1"/></svg>
-                    </div>
-                    <div class="cg-roadmap-content">
-                        <h3>Headless Microservices</h3>
-                        <p>Decoupling the rules engine into a standalone FastAPI endpoint for seamless ERP integration by banks, rating agencies, and ESG auditors.</p>
-                    </div>
-                </div>
-                <div class="cg-roadmap-item">
-                    <div class="cg-roadmap-icon cg-trend">
-                        <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-                    </div>
-                    <div class="cg-roadmap-content">
-                        <h3>Multi-Year Trend Analysis</h3>
-                        <p>Moving beyond Year-over-Year checks to 5-year rolling averages to catch systemic data manipulation and long-term greenwashing patterns.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+/* AUDIT VIEW COMPONENTS */
+.cg-stage-header {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-    <!-- ═══════════ FOOTER ═══════════ -->
-    <footer class="cg-footer">
-        <div class="cg-container">
-            <p>Built for Prasunethon 2.0 Hackathon (Round 2)</p>
-        </div>
-    </footer>
+.cg-header-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
 
-    <!-- ═══════════ SCROLL ANIMATION JS ═══════════ -->
-    <script>
-        const observer = new IntersectionObserver((entries) => {{
-            entries.forEach(entry => {{
-                if (entry.isIntersecting) {{
-                    entry.target.classList.add('cg-visible');
-                }}
-            }});
-        }}, {{ threshold: 0.15 }});
+.cg-header-card .cg-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0a0a0a;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
 
-        document.querySelectorAll('.cg-animate').forEach(el => observer.observe(el));
-    </script>
+.cg-header-card .cg-subtitle {
+    font-size: 0.98rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
 
-</body>
-</html>
-"""
+.cg-badge-pass {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    border-radius: 9999px;
+    padding: 8px 24px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
 
-# Render the full landing page using st.components.v1.html
-# This supports full HTML/CSS/JS without Streamlit stripping tags
-st.components.v1.html(LANDING_PAGE_HTML, height=3200, scrolling=True)
+.cg-badge-flagged {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 9999px;
+    padding: 8px 24px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.cg-metric-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.cg-metric-card .metric-lbl {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.cg-metric-card .metric-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0a0a0a;
+}
+
+.cg-action-area {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+}
+
+/* FOOTER */
+.cg-footer {
+    text-align: center;
+    padding: 36px 0 20px 0;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 2rem;
+}
+
+.cg-footer p {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .cg-hero-title { font-size: 2.5rem; }
+    .cg-pipeline-grid { grid-template-columns: 1fr 1fr; }
+    .cg-grid-4 { grid-template-columns: 1fr 1fr; }
+    .cg-grid-3 { grid-template-columns: 1fr; }
+    .cg-grid-2 { grid-template-columns: 1fr; }
+    .cg-arch-container { grid-template-columns: 1fr; }
+    .cg-arch-arrow { display: none; }
+    .cg-trap-container { grid-template-columns: 1fr; }
+    .cg-nav-center { display: none; }
+}
+</style>""", unsafe_allow_html=True)
+
+# ──────────────────────────────────────────────────────────────────────
+# SPA ROUTING STATE INITIALIZATION
+# ──────────────────────────────────────────────────────────────────────
+if "view" in st.query_params:
+    qp_view = st.query_params.get("view")
+    if qp_view in ["landing", "audit_preset", "audit_custom"]:
+        st.session_state.current_view = qp_view
+
+if "current_view" not in st.session_state:
+    st.session_state.current_view = "landing"
+
+
+# ──────────────────────────────────────────────────────────────────────
+# STICKY TOP NAVBAR COMPONENT
+# ──────────────────────────────────────────────────────────────────────
+def render_navbar(active_view="landing"):
+    if active_view == "landing":
+        st.markdown("""<div class="cg-navbar-wrapper">
+<nav class="cg-navbar">
+<a href="?view=landing" target="_self" class="cg-nav-left">
+<div class="cg-logo-icon">
+<svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+<path d="M16 2L4 7v8c0 7.18 5.12 13.84 12 15 6.88-1.16 12-7.82 12-15V7L16 2z" fill="#0a0a0a" fill-opacity="0.08" stroke="#0a0a0a" stroke-width="2"/>
+<path d="M11.5 16l3 3 6-6" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+<div class="cg-logo-text">
+<span class="cg-brand">ClaimGuard</span>
+<span class="cg-tagline">Trust, made verifiable.</span>
+</div>
+</a>
+<div class="cg-nav-center">
+<a href="#problem" class="cg-nav-pill">Problem</a>
+<a href="#how-it-works" class="cg-nav-pill">How It Works</a>
+<a href="?view=audit_preset" target="_self" class="cg-nav-pill">Verification</a>
+<a href="#architecture" class="cg-nav-pill">Architecture</a>
+</div>
+<div class="cg-nav-right">
+<a href="https://github.com/Adityaa10101/ClaimGuard" target="_blank" class="cg-nav-action-sec">View GitHub</a>
+<a href="?view=audit_custom" target="_self" class="cg-nav-action-pri">Run Audit</a>
+</div>
+</nav>
+</div>""", unsafe_allow_html=True)
+    else:  # audit view navbar
+        st.markdown("""<div class="cg-navbar-wrapper">
+<nav class="cg-navbar">
+<a href="?view=landing" target="_self" class="cg-nav-left">
+<div class="cg-logo-icon">
+<svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+<path d="M16 2L4 7v8c0 7.18 5.12 13.84 12 15 6.88-1.16 12-7.82 12-15V7L16 2z" fill="#0a0a0a" fill-opacity="0.08" stroke="#0a0a0a" stroke-width="2"/>
+<path d="M11.5 16l3 3 6-6" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+<div class="cg-logo-text">
+<span class="cg-brand">ClaimGuard</span>
+<span class="cg-tagline">Trust, made verifiable.</span>
+</div>
+</a>
+<div class="cg-nav-center">
+<a href="?view=landing#problem" target="_self" class="cg-nav-pill">Problem</a>
+<a href="?view=landing#how-it-works" target="_self" class="cg-nav-pill">How It Works</a>
+<a href="?view=audit_preset" target="_self" class="cg-nav-pill" style="color: #0a0a0a; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">Verification</a>
+<a href="?view=landing#architecture" target="_self" class="cg-nav-pill">Architecture</a>
+</div>
+<div class="cg-nav-right">
+<a href="https://github.com/Adityaa10101/ClaimGuard" target="_blank" class="cg-nav-action-sec">View GitHub</a>
+<a href="?view=landing" target="_self" class="cg-nav-action-pri">← Home</a>
+</div>
+</nav>
+</div>""", unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# VIEW 1: LANDING & OVERVIEW PAGE
+# ──────────────────────────────────────────────────────────────────────
+def render_landing_view():
+    # 1. Sticky Top Navbar
+    render_navbar(active_view="landing")
+
+    # 2. Centered Hero Section (Balanced vertical rhythm)
+    st.markdown("""<div class="section hero-section">
+<div class="cg-hero-container">
+<div class="cg-hero-badge-wrap">
+<div class="cg-micro-pill">
+<span class="cg-pulse-dot"></span>
+<span>Verification Engine Ready &nbsp;•&nbsp; SEBI BRSR Core</span>
+</div>
+</div>
+<h1 class="cg-hero-title">Deterministic ESG Auditing<br><span class="cg-gradient-accent">Reimagined.</span></h1>
+<p class="cg-hero-subtitle">LLMs extract the qualitative claim. Pure Python deterministically verifies the numbers against ground-truth tabular disclosures.</p>
+<div class="cg-cta-row">
+<a href="?view=audit_preset" target="_self" class="cg-btn-primary">
+<span>Run ESG Audit</span>
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+<line x1="5" y1="12" x2="19" y2="12"></line>
+<polyline points="12 5 19 12 12 19"></polyline>
+</svg>
+</a>
+<a href="#architecture" class="cg-btn-secondary">
+<span>View Architecture</span>
+</a>
+</div>
+<div class="cg-features-row">
+<div class="cg-feature-pill">⚡ Deterministic Math</div>
+<div class="cg-feature-pill">🧠 Groq Llama-3 Extraction</div>
+<div class="cg-feature-pill">🐍 Pure Python Engine</div>
+<div class="cg-feature-pill">🎯 0.05% Tolerance</div>
+<div class="cg-feature-pill">📑 SEBI BRSR Core</div>
+</div>
+<div class="cg-hero-flow-pill">
+<span>Claim Input</span> → <span>LLM Extraction</span> → <span>Deterministic Verification</span> → <span>PASS / FLAG Proof</span>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 3. Problem: The AI Greenwashing Trap
+    st.markdown("""<div class="section" id="problem">
+<div class="cg-section-header">
+<div class="cg-section-tag">The Fundamental Flaw &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
+<div class="cg-section-title">The AI Greenwashing Trap</div>
+<p class="cg-section-desc">Corporate sustainability disclosures contain qualitative PR narratives masking quantitative tabular metrics.</p>
+</div>
+<div class="cg-trap-container">
+<div class="cg-trap-side">
+<h4>🚨 The Probabilistic Arithmetic Risk</h4>
+<p class="cg-trap-text">While LLMs excel at natural language parsing, neural networks are non-deterministic and prone to mathematical calculation errors. Large language models should not perform arithmetic verification, YoY delta calculations, or compliance checks.</p>
+</div>
+<div class="cg-sol-side">
+<h4>🛡️ The ClaimGuard Separation</h4>
+<p class="cg-trap-text">ClaimGuard strictly separates responsibilities: <strong>LLMs perform semantic claim extraction into typed JSON schemas</strong>, while <strong>deterministic Python executes exact calculations</strong> against ground-truth CSV metrics with a strict 0.05% tolerance threshold.</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 4. How ClaimGuard Works: Sequential 4-Stage Pipeline
+    st.markdown("""<div class="section" id="how-it-works">
+<div class="cg-section-header">
+<div class="cg-section-tag">Deterministic Workflow &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
+<div class="cg-section-title">How ClaimGuard Works</div>
+<p class="cg-section-desc">A four-stage sequential pipeline bridging qualitative narratives with quantitative ground truth.</p>
+</div>
+<div class="cg-pipeline-grid">
+<div class="cg-pipeline-card">
+<div class="cg-pipeline-badge-row">
+<span class="cg-step-num">STAGE 01</span>
+<span class="cg-step-arrow">→</span>
+</div>
+<div class="cg-card-title">Unstructured Ingestion</div>
+<p class="cg-card-desc">Feed in PR narrative statements and ground-truth tabular CSV disclosures (SEBI BRSR filings, corporate reports).</p>
+</div>
+<div class="cg-pipeline-card">
+<div class="cg-pipeline-badge-row">
+<span class="cg-step-num">STAGE 02</span>
+<span class="cg-step-arrow">→</span>
+</div>
+<div class="cg-card-title">LLM Schema Extraction</div>
+<p class="cg-card-desc">Groq Llama-3 strictly parses metric name, baseline year, and claimed percentage into a typed Pydantic JSON schema.</p>
+</div>
+<div class="cg-pipeline-card">
+<div class="cg-pipeline-badge-row">
+<span class="cg-step-num">STAGE 03</span>
+<span class="cg-step-arrow">→</span>
+</div>
+<div class="cg-card-title">Python Verification</div>
+<p class="cg-card-desc">Pure Python and Pandas dynamically map fiscal year columns, compute exact YoY mathematical deltas, and calculate variance.</p>
+</div>
+<div class="cg-pipeline-card">
+<div class="cg-pipeline-badge-row">
+<span class="cg-step-num">STAGE 04</span>
+<span class="cg-step-arrow">✓</span>
+</div>
+<div class="cg-card-title">Verifiable Evidence</div>
+<p class="cg-card-desc">Outputs a verifiable audit decision: PASS (variance ≤ 0.05%) or FLAGGED with explicit mathematical reasoning.</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 5. Example Verification (Immediate Proof of Product)
+    st.markdown("""<div class="section" id="example-verification">
+<div class="cg-section-header">
+<div class="cg-section-tag">Audit Proof &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
+<div class="cg-section-title">Example Verification</div>
+<p class="cg-section-desc">See how ClaimGuard evaluates PR claims against ground-truth BRSR metrics in practice.</p>
+</div>
+<div class="cg-grid-2">
+<div class="cg-example-card">
+<div class="cg-example-header">
+<span class="cg-card-title">Demo Case B — Flagged Greenwashing</span>
+<span class="cg-badge-flagged" style="font-size: 0.82rem; padding: 4px 14px;">🚨 FLAGGED</span>
+</div>
+<div class="cg-example-claim-box">
+"Achieved a 20.00% reduction in total Scope 1 &amp; Scope 2 greenhouse gas emissions in FY24 compared to FY23 baseline."
+</div>
+<div class="cg-example-stats">
+<div class="cg-stat-box">
+<div class="cg-stat-label">Claimed</div>
+<div class="cg-stat-value">20.00%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Calculated</div>
+<div class="cg-stat-value">2.59%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Variance</div>
+<div class="cg-stat-value" style="color: #b91c1c;">17.41%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Tolerance</div>
+<div class="cg-stat-value">0.05%</div>
+</div>
+</div>
+<p class="cg-card-desc" style="font-size: 0.86rem; color: #991b1b; background: #fef2f2; padding: 10px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+<strong>Finding:</strong> Narrative claims 20.00% drop, but ground-truth tabular CSV shows 10,500 MT → 10,228 MT (actual reduction: 2.59%). Variance exceeds 0.05% threshold.
+</p>
+</div>
+
+<div class="cg-example-card">
+<div class="cg-example-header">
+<span class="cg-card-title">Demo Case A — Verified Disclosure</span>
+<span class="cg-badge-pass" style="font-size: 0.82rem; padding: 4px 14px;">✅ PASS</span>
+</div>
+<div class="cg-example-claim-box">
+"Achieved a 2.59% reduction in total Scope 1 &amp; Scope 2 greenhouse gas emissions in FY24 compared to FY23 baseline."
+</div>
+<div class="cg-example-stats">
+<div class="cg-stat-box">
+<div class="cg-stat-label">Claimed</div>
+<div class="cg-stat-value">2.59%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Calculated</div>
+<div class="cg-stat-value">2.59%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Variance</div>
+<div class="cg-stat-value" style="color: #15803d;">0.00%</div>
+</div>
+<div class="cg-stat-box">
+<div class="cg-stat-label">Tolerance</div>
+<div class="cg-stat-value">0.05%</div>
+</div>
+</div>
+<p class="cg-card-desc" style="font-size: 0.86rem; color: #166534; background: #f0fdf4; padding: 10px 12px; border-radius: 8px; border: 1px solid #bbf7d0;">
+<strong>Finding:</strong> Narrative claim matches calculated Python delta from ground-truth disclosures exactly (10,500 MT → 10,228 MT). Variance: 0.00%.
+</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 6. 15 Deterministic Validation Rules (4 Domains with Counts & Sub-items)
+    st.markdown("""<div class="section" id="rules">
+<div class="cg-section-header">
+<div class="cg-section-tag">Coverage Engine &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
+<div class="cg-section-title">15 Deterministic Validation Rules</div>
+<p class="cg-section-desc">15 deterministic mathematical rules organized into 4 core ESG validation domains.</p>
+</div>
+<div class="cg-grid-4">
+<div class="cg-card">
+<div class="cg-step-label">Domain 1 <span class="cg-badge-count">5 Rules</span></div>
+<div class="cg-card-title">Emissions</div>
+<p class="cg-card-desc">Scope 1, Scope 2, and Scope 3 greenhouse gas auditing rules:</p>
+<ul class="cg-rule-list">
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 1 &amp; 2 subtotal summation</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> YoY percentage delta verification</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Base-year restatement matching</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 3 upstream/downstream consistency</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Absolute metric ton variance check</li>
+</ul>
+</div>
+<div class="cg-card">
+<div class="cg-step-label">Domain 2 <span class="cg-badge-count">4 Rules</span></div>
+<div class="cg-card-title">Energy</div>
+<p class="cg-card-desc">Electricity, fuel, and renewable power auditing rules:</p>
+<ul class="cg-rule-list">
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Renewable mix percentage check</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Grid electricity &amp; fuel totals</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Captive generation balance</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Energy intensity per revenue ratio</li>
+</ul>
+</div>
+<div class="cg-card">
+<div class="cg-step-label">Domain 3 <span class="cg-badge-count">3 Rules</span></div>
+<div class="cg-card-title">Water</div>
+<p class="cg-card-desc">Consumption, withdrawal, and recycling rules:</p>
+<ul class="cg-rule-list">
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Surface vs groundwater variance</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Facility water recycling rate</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Consumption intensity boundary</li>
+</ul>
+</div>
+<div class="cg-card">
+<div class="cg-step-label">Domain 4 <span class="cg-badge-count">3 Rules</span></div>
+<div class="cg-card-title">General</div>
+<p class="cg-card-desc">Fundamental mathematical and boundary logic:</p>
+<ul class="cg-rule-list">
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Baseline year period alignment</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Metric unit scale consistency</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> &gt;100% impossibility &amp; zero-div guard</li>
+</ul>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 7. Dedicated Architecture Section
+    st.markdown("""<div class="section" id="architecture">
+<div class="cg-section-header">
+<div class="cg-section-tag">System Design &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
+<div class="cg-section-title">ClaimGuard Verification Architecture</div>
+<p class="cg-section-desc">Strict three-layer decoupled architecture ensuring arithmetic integrity across sustainability disclosures.</p>
+</div>
+<div class="cg-arch-container">
+<div class="cg-arch-box">
+<h4>1. Semantic Extractor</h4>
+<p>Groq Llama-3 / Offline Regex parser converts raw PR text into a structured <code>ExtractedClaim</code> JSON schema. Zero math executed.</p>
+</div>
+<div class="cg-arch-arrow">→</div>
+<div class="cg-arch-box">
+<h4>2. Ground-Truth Mapper</h4>
+<p>Pandas ingestion layer dynamically maps fiscal year columns (e.g. <code>fy23_value</code>, <code>fy24_value</code>) from tabular <code>metrics.csv</code>.</p>
+</div>
+<div class="cg-arch-arrow">→</div>
+<div class="cg-arch-box">
+<h4>3. Deterministic Engine</h4>
+<p>Pure Python mathematical engine computes exact percentage deltas and issues a verified <code>PASS</code> or <code>FLAGGED</code> audit result.</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+
+    # 8. Roadmap / Next Phase (Visually Secondary & Clearly Demarcated)
+    st.markdown("""<div class="section" id="roadmap">
+<div class="cg-section-header">
+<div class="cg-section-tag">Post-MVP Vision &nbsp;•&nbsp; <span class="cg-badge-roadmap">NEXT PHASE</span></div>
+<div class="cg-section-title">Roadmap / Next Phase</div>
+<p class="cg-section-desc">Future enterprise capabilities planned for post-hackathon deployment (not included in current MVP release).</p>
+</div>
+<div class="cg-grid-3">
+<div class="cg-card-secondary">
+<div class="cg-badge-future">PLANNED NEXT PHASE</div>
+<div class="cg-card-title">150-Page BRSR PDF Ingestion</div>
+<p class="cg-card-desc">Automated ingestion of full 150-page annual sustainability filings using OCR, multimodal document parsing, and semantic vector retrieval.</p>
+</div>
+<div class="cg-card-secondary">
+<div class="cg-badge-future">PLANNED NEXT PHASE</div>
+<div class="cg-card-title">FastAPI Microservices</div>
+<p class="cg-card-desc">Decoupled REST API endpoints for seamless automated integration into enterprise ERP systems, audit firms, and ESG rating providers.</p>
+</div>
+<div class="cg-card-secondary">
+<div class="cg-badge-future">PLANNED NEXT PHASE</div>
+<div class="cg-card-title">Multi-Year Trend Auditing</div>
+<p class="cg-card-desc">Multi-year rolling trend regression and time-series anomaly detection to identify systemic data smoothing across consecutive reporting cycles.</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+    # 9. Footer
+    st.markdown("""<div class="cg-footer">
+<p>🛡️ ClaimGuard &nbsp;•&nbsp; Built for Prasunethon 2.0 Hackathon &nbsp;•&nbsp; Deterministic ESG &amp; BRSR Auditing</p>
+</div>""", unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# VIEW 2: AUDIT ENGINE (PRESET / CUSTOM)
+# ──────────────────────────────────────────────────────────────────────
+def render_audit_view(is_custom=False):
+    # Sticky Top Navbar for unified navigation across views
+    render_navbar(active_view="audit")
+
+    # Header Card
+    st.markdown("""<div class="cg-header-card">
+<div class="cg-title">🛡️ ClaimGuard Audit Engine</div>
+<div class="cg-subtitle">Deterministic ESG &amp; BRSR verification engine. Combines LLM structured claim extraction with pure Python mathematical verification.</div>
+</div>""", unsafe_allow_html=True)
+
+    # Stage 01: Evaluation Case
+    st.markdown('<div class="cg-stage-header">01 — Select Evaluation Case</div>', unsafe_allow_html=True)
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PRESET_CLEAN_DIR = os.path.join(BASE_DIR, "data", "preset_clean")
+    PRESET_FLAGGED_DIR = os.path.join(BASE_DIR, "data", "preset_flagged")
+
+    case_options = [
+        "Demo Case A — Verified Claim (Expected: PASS)",
+        "Demo Case B — Greenwashing Detected (Expected: FLAG)",
+        "Custom Input Upload"
+    ]
+    default_index = 2 if is_custom else 0
+
+    ctrl_col1, ctrl_col2 = st.columns([3, 2], gap="large")
+    with ctrl_col1:
+        preset_choice = st.radio(
+            "Evaluation Case Selection:",
+            case_options,
+            index=default_index,
+            horizontal=False,
+            label_visibility="collapsed"
+        )
+    with ctrl_col2:
+        user_groq_key = st.text_input(
+            "Groq API Key",
+            type="password",
+            help="Optional • Used for LLM claim extraction"
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Stage 02: Evidence Ingestion
+    st.markdown('<div class="cg-stage-header">02 — Review Evidence Data</div>', unsafe_allow_html=True)
+
+    narrative_content = ""
+    metrics_df = None
+
+    col1, col2 = st.columns([1, 1], gap="large")
+
+    if preset_choice == "Demo Case A — Verified Claim (Expected: PASS)":
+        narrative_path = os.path.join(PRESET_CLEAN_DIR, "narrative.txt")
+        metrics_path = os.path.join(PRESET_CLEAN_DIR, "metrics.csv")
+        if os.path.exists(narrative_path):
+            with open(narrative_path, "r", encoding="utf-8") as f:
+                narrative_content = f.read()
+        if os.path.exists(metrics_path):
+            metrics_df = pd.read_csv(metrics_path)
+
+        with col1:
+            st.markdown('<div class="cg-section-tag">1. Narrative PR Text</div>', unsafe_allow_html=True)
+            st.text_area("Raw Narrative Text (BRSR / PR Statement)", value=narrative_content, height=270, disabled=True, label_visibility="collapsed")
+
+        with col2:
+            st.markdown('<div class="cg-section-tag">2. Ground-Truth Metrics (CSV)</div>', unsafe_allow_html=True)
+            st.dataframe(metrics_df, use_container_width=True, height=270)
+
+    elif preset_choice == "Demo Case B — Greenwashing Detected (Expected: FLAG)":
+        narrative_path = os.path.join(PRESET_FLAGGED_DIR, "narrative.txt")
+        metrics_path = os.path.join(PRESET_FLAGGED_DIR, "metrics.csv")
+        if os.path.exists(narrative_path):
+            with open(narrative_path, "r", encoding="utf-8") as f:
+                narrative_content = f.read()
+        if os.path.exists(metrics_path):
+            metrics_df = pd.read_csv(metrics_path)
+
+        with col1:
+            st.markdown('<div class="cg-section-tag">1. Narrative PR Text</div>', unsafe_allow_html=True)
+            st.text_area("Raw Narrative Text (BRSR / PR Statement)", value=narrative_content, height=270, disabled=True, label_visibility="collapsed")
+
+        with col2:
+            st.markdown('<div class="cg-section-tag">2. Ground-Truth Metrics (CSV)</div>', unsafe_allow_html=True)
+            st.dataframe(metrics_df, use_container_width=True, height=270)
+
+    else:  # Custom Input Upload
+        with col1:
+            st.markdown('<div class="cg-section-tag">1. Narrative PR Text</div>', unsafe_allow_html=True)
+            narrative_content = st.text_area(
+                "Paste or Type Narrative Text (BRSR / PR Statement)",
+                value="",
+                height=250,
+                placeholder="Paste or type your sustainability PR claim or BRSR narrative text here...",
+                label_visibility="collapsed"
+            )
+
+        with col2:
+            st.markdown('<div class="cg-section-tag">2. Ground-Truth Metrics (CSV)</div>', unsafe_allow_html=True)
+            uploaded_csv = st.file_uploader("Upload Ground-Truth Metrics CSV", type=["csv"])
+            if uploaded_csv:
+                metrics_df = pd.read_csv(uploaded_csv)
+                st.success(f"✓ `{uploaded_csv.name}` loaded successfully ({len(metrics_df)} rows).")
+                st.dataframe(metrics_df, use_container_width=True, height=170)
+            else:
+                st.info("Upload a `metrics.csv` file containing ground-truth FY columns to complete the audit setup.")
+
+    # Stage 03: Run Verification (Placed directly below Step 02 without excessive gap)
+    st.markdown('<div class="cg-action-area"><div class="cg-stage-header">03 — Execute Verification</div></div>', unsafe_allow_html=True)
+
+    action_col1, action_col2 = st.columns([2, 1])
+    with action_col1:
+        run_audit_pressed = st.button("Run Deterministic Audit →", type="primary", key="run_audit_pipeline_btn")
+
+    if run_audit_pressed:
+        if not narrative_content or metrics_df is None:
+            st.error("Please ensure both narrative text and metrics CSV data are loaded before running the audit.")
+        else:
+            with st.spinner("Extracting structured claim via LLM & executing pure Python mathematical verification..."):
+                # Step 1: Extraction via LLM (or offline fallback)
+                extracted_claim = extract_claim_from_narrative(
+                    narrative_text=narrative_content,
+                    api_key=user_groq_key if user_groq_key else None
+                )
+
+                # Step 2: Deterministic Rules Engine verification (Pure Python Math)
+                audit_result = verify_claim(
+                    claim=extracted_claim,
+                    metrics_source=metrics_df
+                )
+
+            # Audit Findings Presentation
+            st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
+            st.markdown('<div class="cg-section-title">Audit Findings &amp; Verification Report</div>', unsafe_allow_html=True)
+
+            status_col, info_col = st.columns([1, 3])
+            with status_col:
+                if audit_result.status == "PASS":
+                    st.markdown('<div class="cg-badge-pass">✅ PASS</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="cg-badge-flagged">🚨 FLAGGED</div>', unsafe_allow_html=True)
+
+            with info_col:
+                if audit_result.status == "PASS":
+                    st.success(audit_result.discrepancy_reason)
+                else:
+                    st.error(audit_result.discrepancy_reason)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # Quantitative Breakdown Metrics
+            m1, m2, m3, m4 = st.columns(4)
+            b_year = audit_result.baseline_year or "FY23"
+            t_year = audit_result.target_year or "FY24"
+            b_val = audit_result.baseline_value if audit_result.baseline_value is not None else 0.0
+            t_val = audit_result.target_value if audit_result.target_value is not None else 0.0
+
+            with m1:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Claimed Reduction</div>
+<div class="metric-val">{audit_result.claimed_percentage:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m2:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Calculated Python Delta</div>
+<div class="metric-val">{audit_result.calculated_delta:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m3:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Mathematical Variance</div>
+<div class="metric-val">{audit_result.variance:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m4:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Ground Truth ({b_year} → {t_year})</div>
+<div class="metric-val">{b_val:,.0f} → {t_val:,.0f}</div>
+</div>""", unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            t1, t2 = st.tabs(["📋 Extracted Claim JSON (LLM Output)", "📊 Deterministic Math Details"])
+
+            with t1:
+                st.json(extracted_claim.model_dump())
+            with t2:
+                st.markdown(f"""
+                **Ground Truth Metric Row**: `{audit_result.matched_metric}`  
+                **Baseline ({b_year})**: `{b_val:,.2f}`  
+                **Target ({t_year})**: `{t_val:,.2f}`  
+                **Formula**: `(({b_year}_Value - {t_year}_Value) / {b_year}_Value) * 100`  
+                **Calculated Reduction**: `(({b_val:,.2f} - {t_val:,.2f}) / {b_val:,.2f}) * 100 = {audit_result.calculated_delta}%`  
+                """)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# SPA DISPATCHER
+# ──────────────────────────────────────────────────────────────────────
+if st.session_state.current_view == "landing":
+    render_landing_view()
+elif st.session_state.current_view == "audit_custom":
+    render_audit_view(is_custom=True)
+else:  # audit_preset
+    render_audit_view(is_custom=False)
