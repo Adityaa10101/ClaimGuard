@@ -1034,8 +1034,8 @@ def render_landing_view():
 <span>Verification Engine Ready &nbsp;•&nbsp; SEBI BRSR Core</span>
 </div>
 </div>
-<h1 class="cg-hero-title">Deterministic ESG Auditing<br><span class="cg-gradient-accent">Reimagined.</span></h1>
-<p class="cg-hero-subtitle">LLMs extract the qualitative claim. Pure Python deterministically verifies the numbers against ground-truth tabular disclosures.</p>
+<h1 class="cg-hero-title">ClaimGuard<br><span class="cg-gradient-accent">Trust, made verifiable.</span></h1>
+<p class="cg-hero-subtitle">Deterministic verification for ESG claims. LLMs extract the claim. Deterministic rules verify it.</p>
 <div class="cg-cta-row">
 <a href="?view=audit_preset" target="_self" class="cg-btn-primary">
 <span>Run ESG Audit</span>
@@ -1068,16 +1068,16 @@ def render_landing_view():
 <div class="cg-section-header">
 <div class="cg-section-tag">The Fundamental Flaw &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
 <div class="cg-section-title">The AI Greenwashing Trap</div>
-<p class="cg-section-desc">Corporate sustainability disclosures contain qualitative PR narratives masking quantitative tabular metrics.</p>
+<p class="cg-section-desc">LLMs are probabilistic. ESG compliance is deterministic.</p>
 </div>
 <div class="cg-trap-container">
 <div class="cg-trap-side">
-<h4>🚨 The Probabilistic Arithmetic Risk</h4>
-<p class="cg-trap-text">While LLMs excel at natural language parsing, neural networks are non-deterministic and prone to mathematical calculation errors. Large language models should not perform arithmetic verification, YoY delta calculations, or compliance checks.</p>
+<h4>🚨 The Trap</h4>
+<p class="cg-trap-text">Large language models cannot reliably perform arithmetic verification, YoY delta calculations, or compliance checks.</p>
 </div>
 <div class="cg-sol-side">
-<h4>🛡️ The ClaimGuard Separation</h4>
-<p class="cg-trap-text">ClaimGuard strictly separates responsibilities: <strong>LLMs perform semantic claim extraction into typed JSON schemas</strong>, while <strong>deterministic Python executes exact calculations</strong> against ground-truth CSV metrics with a strict 0.05% tolerance threshold.</p>
+<h4>🛡️ The Solution</h4>
+<p class="cg-trap-text">ClaimGuard uses LLMs only for semantic extraction. Exact calculations are executed in Python against ground-truth CSV metrics with a strict 0.05% tolerance.</p>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
@@ -1089,40 +1089,40 @@ def render_landing_view():
 <div class="cg-section-header">
 <div class="cg-section-tag">Deterministic Workflow &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
 <div class="cg-section-title">How ClaimGuard Works</div>
-<p class="cg-section-desc">A four-stage sequential pipeline bridging qualitative narratives with quantitative ground truth.</p>
+<p class="cg-section-desc">A strict four-stage pipeline bridging narratives with quantitative ground truth.</p>
 </div>
 <div class="cg-pipeline-grid">
 <div class="cg-pipeline-card">
 <div class="cg-pipeline-badge-row">
-<span class="cg-step-num">STAGE 01</span>
+<span class="cg-step-num">01 EXTRACT</span>
 <span class="cg-step-arrow">→</span>
 </div>
 <div class="cg-card-title">Unstructured Ingestion</div>
-<p class="cg-card-desc">Feed in PR narrative statements and ground-truth tabular CSV disclosures (SEBI BRSR filings, corporate reports).</p>
+<p class="cg-card-desc">Feed in narrative statements and tabular CSV disclosures.</p>
 </div>
 <div class="cg-pipeline-card">
 <div class="cg-pipeline-badge-row">
-<span class="cg-step-num">STAGE 02</span>
+<span class="cg-step-num">02 PARSE</span>
 <span class="cg-step-arrow">→</span>
 </div>
-<div class="cg-card-title">LLM Schema Extraction</div>
-<p class="cg-card-desc">Groq Llama-3 strictly parses metric name, baseline year, and claimed percentage into a typed Pydantic JSON schema.</p>
+<div class="cg-card-title">LLM Extraction</div>
+<p class="cg-card-desc">Groq Llama-3 extracts metric name, baseline year, and claimed percentage.</p>
 </div>
 <div class="cg-pipeline-card">
 <div class="cg-pipeline-badge-row">
-<span class="cg-step-num">STAGE 03</span>
+<span class="cg-step-num">03 CALCULATE</span>
 <span class="cg-step-arrow">→</span>
 </div>
 <div class="cg-card-title">Python Verification</div>
-<p class="cg-card-desc">Pure Python and Pandas dynamically map fiscal year columns, compute exact YoY mathematical deltas, and calculate variance.</p>
+<p class="cg-card-desc">Pandas dynamically computes exact mathematical deltas and variances.</p>
 </div>
 <div class="cg-pipeline-card">
 <div class="cg-pipeline-badge-row">
-<span class="cg-step-num">STAGE 04</span>
+<span class="cg-step-num">04 AUDIT</span>
 <span class="cg-step-arrow">✓</span>
 </div>
 <div class="cg-card-title">Verifiable Evidence</div>
-<p class="cg-card-desc">Outputs a verifiable audit decision: PASS (variance ≤ 0.05%) or FLAGGED with explicit mathematical reasoning.</p>
+<p class="cg-card-desc">Outputs a verified PASS or FLAGGED decision with explicit reasoning.</p>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
@@ -1139,11 +1139,8 @@ def render_landing_view():
 <div class="cg-grid-2">
 <div class="cg-example-card">
 <div class="cg-example-header">
-<span class="cg-card-title">Demo Case B — Flagged Greenwashing</span>
+<span class="cg-card-title">Demo Case B — Greenwashing Detected</span>
 <span class="cg-badge-flagged" style="font-size: 0.82rem; padding: 4px 14px;">🚨 FLAGGED</span>
-</div>
-<div class="cg-example-claim-box">
-"Achieved a 20.00% reduction in total Scope 1 &amp; Scope 2 greenhouse gas emissions in FY24 compared to FY23 baseline."
 </div>
 <div class="cg-example-stats">
 <div class="cg-stat-box">
@@ -1159,22 +1156,16 @@ def render_landing_view():
 <div class="cg-stat-value" style="color: #b91c1c;">17.41%</div>
 </div>
 <div class="cg-stat-box">
-<div class="cg-stat-label">Tolerance</div>
-<div class="cg-stat-value">0.05%</div>
+<div class="cg-stat-label">Decision</div>
+<div class="cg-stat-value" style="color: #b91c1c;">FLAGGED</div>
 </div>
 </div>
-<p class="cg-card-desc" style="font-size: 0.86rem; color: #991b1b; background: #fef2f2; padding: 10px 12px; border-radius: 8px; border: 1px solid #fecaca;">
-<strong>Finding:</strong> Narrative claims 20.00% drop, but ground-truth tabular CSV shows 10,500 MT → 10,228 MT (actual reduction: 2.59%). Variance exceeds 0.05% threshold.
-</p>
 </div>
 
 <div class="cg-example-card">
 <div class="cg-example-header">
 <span class="cg-card-title">Demo Case A — Verified Disclosure</span>
 <span class="cg-badge-pass" style="font-size: 0.82rem; padding: 4px 14px;">✅ PASS</span>
-</div>
-<div class="cg-example-claim-box">
-"Achieved a 2.59% reduction in total Scope 1 &amp; Scope 2 greenhouse gas emissions in FY24 compared to FY23 baseline."
 </div>
 <div class="cg-example-stats">
 <div class="cg-stat-box">
@@ -1190,13 +1181,10 @@ def render_landing_view():
 <div class="cg-stat-value" style="color: #15803d;">0.00%</div>
 </div>
 <div class="cg-stat-box">
-<div class="cg-stat-label">Tolerance</div>
-<div class="cg-stat-value">0.05%</div>
+<div class="cg-stat-label">Decision</div>
+<div class="cg-stat-value" style="color: #15803d;">PASS</div>
 </div>
 </div>
-<p class="cg-card-desc" style="font-size: 0.86rem; color: #166534; background: #f0fdf4; padding: 10px 12px; border-radius: 8px; border: 1px solid #bbf7d0;">
-<strong>Finding:</strong> Narrative claim matches calculated Python delta from ground-truth disclosures exactly (10,500 MT → 10,228 MT). Variance: 0.00%.
-</p>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
@@ -1214,44 +1202,40 @@ def render_landing_view():
 <div class="cg-card">
 <div class="cg-step-label">Domain 1 <span class="cg-badge-count">5 Rules</span></div>
 <div class="cg-card-title">Emissions</div>
-<p class="cg-card-desc">Scope 1, Scope 2, and Scope 3 greenhouse gas auditing rules:</p>
 <ul class="cg-rule-list">
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 1 &amp; 2 subtotal summation</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> YoY percentage delta verification</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Base-year restatement matching</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 3 upstream/downstream consistency</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Absolute metric ton variance check</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 1 &amp; 2 Summation</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> YoY Percentage Delta</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Base-Year Matching</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Scope 3 Consistency</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Metric-Ton Variance</li>
 </ul>
 </div>
 <div class="cg-card">
 <div class="cg-step-label">Domain 2 <span class="cg-badge-count">4 Rules</span></div>
 <div class="cg-card-title">Energy</div>
-<p class="cg-card-desc">Electricity, fuel, and renewable power auditing rules:</p>
 <ul class="cg-rule-list">
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Renewable mix percentage check</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Grid electricity &amp; fuel totals</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Captive generation balance</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Energy intensity per revenue ratio</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Renewable Mix</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Electricity &amp; Fuel Totals</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Captive Generation</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Energy Intensity</li>
 </ul>
 </div>
 <div class="cg-card">
 <div class="cg-step-label">Domain 3 <span class="cg-badge-count">3 Rules</span></div>
 <div class="cg-card-title">Water</div>
-<p class="cg-card-desc">Consumption, withdrawal, and recycling rules:</p>
 <ul class="cg-rule-list">
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Surface vs groundwater variance</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Facility water recycling rate</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Consumption intensity boundary</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Withdrawal Variance</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Recycling Rate</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Consumption Intensity</li>
 </ul>
 </div>
 <div class="cg-card">
 <div class="cg-step-label">Domain 4 <span class="cg-badge-count">3 Rules</span></div>
 <div class="cg-card-title">General</div>
-<p class="cg-card-desc">Fundamental mathematical and boundary logic:</p>
 <ul class="cg-rule-list">
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Baseline year period alignment</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Metric unit scale consistency</li>
-<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> &gt;100% impossibility &amp; zero-div guard</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Baseline Year Alignment</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Metric Unit Scale</li>
+<li class="cg-rule-item"><span class="cg-rule-bullet">•</span> Impossibility Bounds</li>
 </ul>
 </div>
 </div>
@@ -1264,23 +1248,14 @@ def render_landing_view():
 <div class="cg-section-header">
 <div class="cg-section-tag">System Design &nbsp;•&nbsp; <span class="cg-badge-mvp">CURRENT MVP</span></div>
 <div class="cg-section-title">ClaimGuard Verification Architecture</div>
-<p class="cg-section-desc">Strict three-layer decoupled architecture ensuring arithmetic integrity across sustainability disclosures.</p>
+<p class="cg-section-desc">Two interfaces. One verification engine.</p>
 </div>
-<div class="cg-arch-container">
-<div class="cg-arch-box">
-<h4>1. Semantic Extractor</h4>
-<p>Groq Llama-3 / Offline Regex parser converts raw PR text into a structured <code>ExtractedClaim</code> JSON schema. Zero math executed.</p>
-</div>
-<div class="cg-arch-arrow">→</div>
-<div class="cg-arch-box">
-<h4>2. Ground-Truth Mapper</h4>
-<p>Pandas ingestion layer dynamically maps fiscal year columns (e.g. <code>fy23_value</code>, <code>fy24_value</code>) from tabular <code>metrics.csv</code>.</p>
-</div>
-<div class="cg-arch-arrow">→</div>
-<div class="cg-arch-box">
-<h4>3. Deterministic Engine</h4>
-<p>Pure Python mathematical engine computes exact percentage deltas and issues a verified <code>PASS</code> or <code>FLAGGED</code> audit result.</p>
-</div>
+<div style="background: #fafafa; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.8; color: #374151;">
+<pre style="margin: 0;">
+Streamlit UI ─────┐
+                  ├──→ Extractor → 15-Rule Deterministic Engine → AuditResult
+FastAPI API  ─────┘
+</pre>
 </div>
 </div>""", unsafe_allow_html=True)
 
@@ -1290,24 +1265,20 @@ def render_landing_view():
     st.markdown("""<div class="section" id="roadmap">
 <div class="cg-section-header">
 <div class="cg-section-tag">Post-MVP Vision &nbsp;•&nbsp; <span class="cg-badge-roadmap">NEXT PHASE</span></div>
-<div class="cg-section-title">Roadmap / Next Phase</div>
-<p class="cg-section-desc">Future enterprise capabilities planned for post-hackathon deployment (not included in current MVP release).</p>
+<div class="cg-section-title">Roadmap</div>
 </div>
 <div class="cg-grid-3">
 <div class="cg-card-secondary">
-<div class="cg-badge-future">PLANNED NEXT PHASE</div>
 <div class="cg-card-title">150-Page BRSR PDF Ingestion</div>
-<p class="cg-card-desc">Automated ingestion of full 150-page annual sustainability filings using OCR, multimodal document parsing, and semantic vector retrieval.</p>
+<p class="cg-card-desc"><b>What:</b> Full document parsing.<br><b>Why:</b> To avoid manual copy-paste of narratives.</p>
 </div>
 <div class="cg-card-secondary">
-<div class="cg-badge-future">PLANNED NEXT PHASE</div>
 <div class="cg-card-title">FastAPI Microservices</div>
-<p class="cg-card-desc">Decoupled REST API endpoints for seamless automated integration into enterprise ERP systems, audit firms, and ESG rating providers.</p>
+<p class="cg-card-desc"><b>What:</b> Production REST API.<br><b>Why:</b> For integration into enterprise ERP systems.</p>
 </div>
 <div class="cg-card-secondary">
-<div class="cg-badge-future">PLANNED NEXT PHASE</div>
 <div class="cg-card-title">Multi-Year Trend Auditing</div>
-<p class="cg-card-desc">Multi-year rolling trend regression and time-series anomaly detection to identify systemic data smoothing across consecutive reporting cycles.</p>
+<p class="cg-card-desc"><b>What:</b> Time-series anomaly detection.<br><b>Why:</b> To identify data smoothing across reporting cycles.</p>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
@@ -1450,66 +1421,175 @@ def render_audit_view(is_custom=False):
                     metrics_source=metrics_df
                 )
 
-            # Audit Findings Presentation
+            # ──────────────────────────────────────────────────────────
+            # AUDIT FINDINGS PRESENTATION (Goal B Polish)
+            # ──────────────────────────────────────────────────────────
             st.markdown('<hr class="cg-section-divider">', unsafe_allow_html=True)
-            st.markdown('<div class="cg-section-title">Audit Findings &amp; Verification Report</div>', unsafe_allow_html=True)
 
-            status_col, info_col = st.columns([1, 3])
-            with status_col:
-                if audit_result.status == "PASS":
-                    st.markdown('<div class="cg-badge-pass">✅ PASS</div>', unsafe_allow_html=True)
-                else:
-                    st.markdown('<div class="cg-badge-flagged">🚨 FLAGGED</div>', unsafe_allow_html=True)
+            # 1. Result Hero
+            dec = getattr(audit_result, "audit_decision", None)
+            dec_val = dec.value if dec else "UNVERIFIED"
+            exec_status = getattr(audit_result, "execution_status", None)
+            exec_val = exec_status.value if exec_status else "SUCCESS"
 
-            with info_col:
-                if audit_result.status == "PASS":
-                    st.success(audit_result.discrepancy_reason)
-                else:
-                    st.error(audit_result.discrepancy_reason)
+            if exec_val == "ERROR":
+                hero_cls, hero_icon, hero_title, hero_msg = "cg-badge-roadmap", "⚠️", "AUDIT ERROR", "Verification could not be completed."
+            elif dec_val == "PASS":
+                hero_cls, hero_icon, hero_title, hero_msg = "cg-badge-pass", "✅", "VERIFIED", "The claim matches the supplied ground-truth data."
+            elif dec_val == "FLAGGED":
+                hero_cls, hero_icon, hero_title, hero_msg = "cg-badge-flagged", "🚨", "CLAIM FLAGGED", "The claimed value does not match the independently verified value."
+            else: # UNVERIFIED
+                hero_cls, hero_icon, hero_title, hero_msg = "cg-badge-roadmap", "⚠️", "AUDIT UNVERIFIED", "The claim could not be safely verified from the supplied data."
+
+            st.markdown(f'''
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div class="{hero_cls}" style="font-size: 1.5rem; padding: 12px 32px; margin-bottom: 1rem;">
+                    {hero_icon} {hero_title}
+                </div>
+                <p style="font-size: 1.1rem; color: #4b5563;">{hero_msg}</p>
+            </div>
+            ''', unsafe_allow_html=True)
+
+            # 2. Key Metric Strip
+            st.markdown('<div class="cg-stage-header">Key Metrics</div>', unsafe_allow_html=True)
+            m1, m2, m3, m4 = st.columns(4)
+            with m1:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Claimed</div>
+<div class="metric-val">{audit_result.claimed_percentage:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m2:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Calculated</div>
+<div class="metric-val">{audit_result.calculated_delta:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m3:
+                var_color = "#b91c1c" if audit_result.variance > 0.05 else "#15803d"
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Variance</div>
+<div class="metric-val" style="color: {var_color};">{audit_result.variance:.2f}%</div>
+</div>""", unsafe_allow_html=True)
+            with m4:
+                st.markdown(f"""<div class="cg-metric-card">
+<div class="metric-lbl">Tolerance</div>
+<div class="metric-val">0.05%</div>
+</div>""", unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Quantitative Breakdown Metrics
-            m1, m2, m3, m4 = st.columns(4)
+            # 3. Primary Finding
+            st.markdown('<div class="cg-stage-header">Primary Finding</div>', unsafe_allow_html=True)
+
+            # Find primary flagged rule
+            rule_results = getattr(audit_result, "rule_results", [])
+            flagged_rule = next((r for r in rule_results if r.status.value == "FLAGGED"), None)
+
+            if exec_val == "ERROR":
+                find_title, find_msg = "Execution Error", "Verification could not be completed."
+                find_cls, find_bg, find_border = "#991b1b", "#fef2f2", "#fecaca"
+            elif dec_val == "UNVERIFIED":
+                # Safe fallback reason from discrepancy_reason
+                find_title, find_msg = f"Unverified: {exec_val}", audit_result.discrepancy_reason
+                find_cls, find_bg, find_border = "#92400e", "#fffbeb", "#fde68a"
+            elif dec_val == "PASS":
+                find_title, find_msg = "Verified Clean", "Verification matched the supplied ground-truth data."
+                find_cls, find_bg, find_border = "#166534", "#f0fdf4", "#bbf7d0"
+            else: # FLAGGED
+                if flagged_rule:
+                    find_title = f"{flagged_rule.rule_id} — {flagged_rule.rule_name}"
+                    find_msg = audit_result.discrepancy_reason
+                else:
+                    find_title = "Discrepancy Detected"
+                    find_msg = audit_result.discrepancy_reason
+                find_cls, find_bg, find_border = "#991b1b", "#fef2f2", "#fecaca"
+
+            st.markdown(f'''
+            <div style="color: {find_cls}; background: {find_bg}; padding: 20px; border-radius: 12px; border: 1px solid {find_border}; margin-bottom: 2rem;">
+                <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; color: {find_cls};">{find_title}</h4>
+                <p style="margin: 0; font-size: 0.95rem;">{find_msg}</p>
+            </div>
+            ''', unsafe_allow_html=True)
+
+            # 4. Evidence Panel (If available)
             b_year = audit_result.baseline_year or "FY23"
             t_year = audit_result.target_year or "FY24"
             b_val = audit_result.baseline_value if audit_result.baseline_value is not None else 0.0
             t_val = audit_result.target_value if audit_result.target_value is not None else 0.0
 
-            with m1:
-                st.markdown(f"""<div class="cg-metric-card">
-<div class="metric-lbl">Claimed Reduction</div>
-<div class="metric-val">{audit_result.claimed_percentage:.2f}%</div>
-</div>""", unsafe_allow_html=True)
-            with m2:
-                st.markdown(f"""<div class="cg-metric-card">
-<div class="metric-lbl">Calculated Python Delta</div>
-<div class="metric-val">{audit_result.calculated_delta:.2f}%</div>
-</div>""", unsafe_allow_html=True)
-            with m3:
-                st.markdown(f"""<div class="cg-metric-card">
-<div class="metric-lbl">Mathematical Variance</div>
-<div class="metric-val">{audit_result.variance:.2f}%</div>
-</div>""", unsafe_allow_html=True)
-            with m4:
-                st.markdown(f"""<div class="cg-metric-card">
-<div class="metric-lbl">Ground Truth ({b_year} → {t_year})</div>
-<div class="metric-val">{b_val:,.0f} → {t_val:,.0f}</div>
-</div>""", unsafe_allow_html=True)
+            if b_val > 0 or t_val > 0:
+                st.markdown('<div class="cg-stage-header">Evidence</div>', unsafe_allow_html=True)
+                ev_cols = st.columns(4)
+                with ev_cols[0]:
+                    st.markdown(f"**Baseline ({b_year})**<br/>{b_val:,.2f}", unsafe_allow_html=True)
+                with ev_cols[1]:
+                    st.markdown(f"**Target ({t_year})**<br/>{t_val:,.2f}", unsafe_allow_html=True)
+                with ev_cols[2]:
+                    st.markdown(f"**Formula**<br/>`(({b_year} - {t_year}) / {b_year}) * 100`", unsafe_allow_html=True)
+                with ev_cols[3]:
+                    st.markdown(f"**Calculated Reduction**<br/>{audit_result.calculated_delta:.2f}%", unsafe_allow_html=True)
+                st.markdown("<br><br>", unsafe_allow_html=True)
 
+            # 5. Rule Summary
+            summary = getattr(audit_result, "summary", None)
+            if summary:
+                st.markdown('<div class="cg-stage-header">Rule Summary</div>', unsafe_allow_html=True)
+                s_cols = st.columns(4)
+                s_cols[0].metric("Rules Evaluated", summary.total_rules)
+                s_cols[1].metric("Passed", summary.passed)
+                s_cols[2].metric("Flagged", summary.flagged)
+                s_cols[3].metric("Not Applicable", summary.not_applicable)
+                st.markdown("<br>", unsafe_allow_html=True)
+
+            # 6 & 7. Detailed Rule Breakdown with expanders
+            if rule_results:
+                st.markdown('<div class="cg-stage-header">Rule Breakdown</div>', unsafe_allow_html=True)
+                for r in rule_results:
+                    val = r.status.value
+                    if val == "PASS":
+                        r_color, r_icon = "#15803d", "✅"
+                    elif val == "FLAGGED":
+                        r_color, r_icon = "#b91c1c", "🚨"
+                    elif val == "NOT_APPLICABLE":
+                        r_color, r_icon = "#6b7280", "➖"
+                    else:
+                        r_color, r_icon = "#92400e", "⚠️"
+
+                    with st.expander(f"{r_icon}  {r.rule_id}  |  {r.domain}  |  {r.rule_name}"):
+                        st.markdown(f"**Status:** <span style='color:{r_color}; font-weight:600;'>{val.replace('_', ' ')}</span>", unsafe_allow_html=True)
+                        st.markdown(f"**Message:** {r.message}")
+
+                        ev = getattr(r, "evidence", None)
+                        if ev and (ev.baseline_value is not None or r.actual_value is not None or ev.raw_formula):
+                            st.markdown("---")
+                            st.markdown("**Evidence Data:**")
+                            if ev.metric_name: st.markdown(f"- **Metric:** {ev.metric_name}")
+                            if ev.baseline_year and ev.baseline_value is not None: st.markdown(f"- **Baseline ({ev.baseline_year}):** {ev.baseline_value:,.2f}")
+                            if ev.target_year and ev.target_value is not None: st.markdown(f"- **Target ({ev.target_year}):** {ev.target_value:,.2f}")
+                            if r.actual_value is not None: st.markdown(f"- **Actual:** {r.actual_value:,.2f}")
+                            if r.expected_value is not None: st.markdown(f"- **Expected:** {r.expected_value:,.2f}")
+                            if r.variance is not None: st.markdown(f"- **Variance:** {r.variance:,.2f}")
+                            if ev.raw_formula: st.markdown(f"- **Formula:** `{ev.raw_formula}`")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+            # 8. Audit Traceability (Metadata)
+            st.markdown('<div class="cg-stage-header" style="color: #6b7280; font-size: 0.8rem;">Audit Traceability</div>', unsafe_allow_html=True)
+            st.markdown(f'''
+            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.85rem; color: #4b5563;">
+                <strong>Narrative Claim:</strong> {extracted_claim.claim_text or "N/A"}<br/>
+                <strong>Matched Metric:</strong> {audit_result.matched_metric or "N/A"}<br/>
+                <strong>Baseline Year:</strong> {b_year} (Value: {b_val:,.2f})<br/>
+                <strong>Target Year:</strong> {t_year} (Value: {t_val:,.2f})<br/>
+            </div>
+            ''', unsafe_allow_html=True)
+
+            # 9. Result Actions
             st.markdown("<br>", unsafe_allow_html=True)
-            t1, t2 = st.tabs(["📋 Extracted Claim JSON (LLM Output)", "📊 Deterministic Math Details"])
-
-            with t1:
-                st.json(extracted_claim.model_dump())
-            with t2:
-                st.markdown(f"""
-                **Ground Truth Metric Row**: `{audit_result.matched_metric}`  
-                **Baseline ({b_year})**: `{b_val:,.2f}`  
-                **Target ({t_year})**: `{t_val:,.2f}`  
-                **Formula**: `(({b_year}_Value - {t_year}_Value) / {b_year}_Value) * 100`  
-                **Calculated Reduction**: `(({b_val:,.2f} - {t_val:,.2f}) / {b_val:,.2f}) * 100 = {audit_result.calculated_delta}%`  
-                """)
+            nav1, nav2 = st.columns([1, 4])
+            with nav1:
+                st.markdown('<a href="?view=audit_preset" target="_self" class="cg-btn-primary" style="width:100%; text-align:center;">Run Another</a>', unsafe_allow_html=True)
+            with nav2:
+                st.markdown('<a href="?view=landing" target="_self" class="cg-btn-secondary">← Back to Home</a>', unsafe_allow_html=True)
 
 
 # ──────────────────────────────────────────────────────────────────────
