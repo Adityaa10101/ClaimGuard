@@ -52,6 +52,14 @@ class ExtractedClaim(BaseModel):
         None,
         description="The verbatim claim sentence extracted from the narrative text"
     )
+    claimed_recycling_rate: Optional[float] = Field(
+        None,
+        description="The water recycling rate or percentage claimed"
+    )
+    claimed_water_intensity: Optional[float] = Field(
+        None,
+        description="The water consumption intensity claimed"
+    )
 
 
 class RuleEvidence(BaseModel):

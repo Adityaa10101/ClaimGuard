@@ -36,7 +36,13 @@ def extract_claim_from_narrative(
                 "- claimed_percentage (float, e.g. 2.59 or 20.0, positive number representing reduction percentage)\n"
                 "- baseline_year (string, earlier comparison baseline year, e.g. 'FY23')\n"
                 "- target_year (string, later evaluation target year, e.g. 'FY24')\n"
-                "- claim_text (string, verbatim claim sentence)\n\n"
+                "- claim_text (string, verbatim claim sentence)\n"
+                "- claimed_recycling_rate (float or null, e.g. 35.0 if narrative explicitly states a water recycling percentage/rate)\n"
+                "- claimed_water_intensity (float or null, e.g. 2.4 if narrative explicitly states a water-consumption intensity)\n\n"
+                "IMPORTANT DOMAIN DETECTION:\n"
+                "- For water recycling claims (e.g. '35% recycling rate'), populate `claimed_recycling_rate`, and DO NOT put it in `claimed_percentage`.\n"
+                "- For water intensity claims (e.g. '2.4 KL per crore revenue'), populate `claimed_water_intensity`, and DO NOT put it in `claimed_percentage`.\n"
+                "- For general emissions/energy reduction (e.g. '20% reduction in emissions'), populate `claimed_percentage`, and leave the water fields as null.\n\n"
                 f"Narrative Text:\n\"\"\"\n{narrative_text}\n\"\"\""
             )
             
@@ -73,12 +79,31 @@ def _fallback_rule_extraction(narrative_text: str) -> ExtractedClaim:
     Offline pattern extractor for narrative text.
     Extracts percentage claims, baseline year, target year, and metric.
     """
-    # Find percentage claim (e.g. 2.59%, 20.00%, 20%)
-    pct_match = re.search(r'(\d+(?:\.\d+)?)\s*%\s*(?:reduction|decrease|cut)', narrative_text, re.IGNORECASE)
-    if not pct_match:
-        pct_match = re.search(r'(?:reduced|cut|decreased)\s+.*?\s+(\d+(?:\.\d+)?)\s*%', narrative_text, re.IGNORECASE)
+    claimed_pct = 0.0
+    claimed_recycling_rate = None
+    claimed_water_intensity = None
     
-    claimed_pct = float(pct_match.group(1)) if pct_match else 0.0
+    # Check for recycling rate
+    recycle_match = re.search(r'(\d+(?:\.\d+)?)\s*%\s*recycl(?:ing|ed)\b|\brecycl(?:ed|ing)\b.*?\b(\d+(?:\.\d+)?)\s*%', narrative_text, re.IGNORECASE)
+    if not recycle_match:
+        # Also check for "water recycling rate of 35%"
+        recycle_match = re.search(r'recycling rate of\s*(\d+(?:\.\d+)?)\s*%', narrative_text, re.IGNORECASE)
+        
+    if recycle_match:
+        claimed_recycling_rate = float(next(g for g in recycle_match.groups() if g is not None))
+    else:
+        # Check for water intensity
+        intensity_match = re.search(r'water.*?(?:consumption)?\s*intensity.*?(\d+(?:\.\d+)?)', narrative_text, re.IGNORECASE)
+        if intensity_match:
+            claimed_water_intensity = float(intensity_match.group(1))
+
+    # Only extract reduction percentage if it's not a water intensity or recycling rate
+    if claimed_recycling_rate is None and claimed_water_intensity is None:
+        pct_match = re.search(r'(\d+(?:\.\d+)?)\s*%\s*(?:reduction|decrease|cut|improved|efficiency)', narrative_text, re.IGNORECASE)
+        if not pct_match:
+            pct_match = re.search(r'(?:reduced|cut|decreased|improved)\s+.*?\s+(\d+(?:\.\d+)?)\s*%', narrative_text, re.IGNORECASE)
+        
+        claimed_pct = float(pct_match.group(1)) if pct_match else 0.0
 
     # Find baseline and target years chronologically (e.g. FY23, FY24)
     found_years = re.findall(r'FY\d{2,4}', narrative_text, re.IGNORECASE)
@@ -109,7 +134,7 @@ def _fallback_rule_extraction(narrative_text: str) -> ExtractedClaim:
 
     # Determine metric name
     metric_name = "Total Scope 1 & 2 Emissions"
-    if "water" in narrative_text.lower():
+    if "water" in narrative_text.lower() or "recycl" in narrative_text.lower():
         metric_name = "Facility Water Usage"
     elif "waste" in narrative_text.lower():
         metric_name = "Solid Waste Generated"
@@ -119,5 +144,7 @@ def _fallback_rule_extraction(narrative_text: str) -> ExtractedClaim:
         claimed_percentage=claimed_pct,
         baseline_year=baseline_year,
         target_year=target_year,
-        claim_text=claim_sentence or narrative_text[:100]
+        claim_text=claim_sentence or narrative_text[:100],
+        claimed_recycling_rate=claimed_recycling_rate,
+        claimed_water_intensity=claimed_water_intensity
     )
