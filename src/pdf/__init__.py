@@ -6,6 +6,7 @@ from .models import (
     DocumentPage,
     DocumentTable,
     ExtractedEvidence,
+    EvidenceType,
     ParsedDocument,
 )
 from .parser import PDFParser, parse_pdf
@@ -16,6 +17,15 @@ from .claim_discovery import (
     discover_claims_in_document,
     discover_claims_from_text,
     extract_claims_from_text_fallback,
+)
+from .evidence_matcher import (
+    EvidenceMatcher,
+    MatchResult,
+    claim_candidate_to_extracted_claim,
+)
+from .audit_runner import (
+    PDFAuditResult,
+    audit_pdf_claim,
 )
 
 __all__ = [
@@ -34,4 +44,10 @@ __all__ = [
     "discover_claims_in_document",
     "discover_claims_from_text",
     "extract_claims_from_text_fallback",
+    # Phase 6C
+    "EvidenceMatcher",
+    "MatchResult",
+    "claim_candidate_to_extracted_claim",
+    "PDFAuditResult",
+    "audit_pdf_claim",
 ]

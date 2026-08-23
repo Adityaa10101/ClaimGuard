@@ -164,11 +164,21 @@ class ParsedDocument:
         return sum(1 for p in self.pages if p.has_text)
 
 
+from enum import Enum
+
+
+class EvidenceType(str, Enum):
+    """Distinguishes direct source disclosures from mathematically derived combinations."""
+    SOURCE_REPORTED = "SOURCE_REPORTED"
+    DERIVED = "DERIVED"
+
+
 @dataclass
 class ExtractedEvidence:
     """
     Normalized representation of a single quantitative or qualitative disclosure.
-    Strictly preserves source file and page number for audit provenance.
+    Strictly preserves source file, page number, and evidence provenance.
+    Explicitly distinguishes SOURCE_REPORTED from DERIVED evidence.
     """
     source_file: str
     page_number: int
@@ -180,6 +190,8 @@ class ExtractedEvidence:
     entity: Optional[str] = None
     context_text: Optional[str] = None
     table_page: Optional[int] = None
+    evidence_type: str = EvidenceType.SOURCE_REPORTED.value
+    derivation_notes: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -194,5 +206,7 @@ class ExtractedEvidence:
             "entity": self.entity,
             "context_text": self.context_text,
             "table_page": self.table_page,
+            "evidence_type": self.evidence_type,
+            "derivation_notes": self.derivation_notes,
             "metadata": self.metadata,
         }

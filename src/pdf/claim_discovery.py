@@ -234,6 +234,11 @@ def _normalize_metric(raw: Optional[str]) -> Optional[str]:
     if not raw:
         return None
     lower = raw.strip().lower()
+    # Check for specific single-scope indicators first
+    if "scope 1" in lower and not any(k in lower for k in ["scope 2", "and 2", "& 2", "+ 2", "+ scope"]):
+        return "Scope 1 Emissions"
+    if "scope 2" in lower and not any(k in lower for k in ["scope 1", "1 and", "1 &", "1 +", "scope 1 +"]):
+        return "Scope 2 Emissions"
     for alias, canonical in METRIC_ALIASES.items():
         if alias in lower:
             return canonical
