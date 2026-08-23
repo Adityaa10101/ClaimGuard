@@ -13,3 +13,5 @@ fastapi
 uvicorn[standard]
 httpx
 pytest
+pdfplumber>=0.11.0
+pypdf>=5.0.0

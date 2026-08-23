@@ -1,0 +1,37 @@
+"""
+ClaimGuard PDF Ingestion and Evidence Extraction Module
+"""
+
+from .models import (
+    DocumentPage,
+    DocumentTable,
+    ExtractedEvidence,
+    ParsedDocument,
+)
+from .parser import PDFParser, parse_pdf
+from .evidence_extractor import EvidenceExtractor
+from .claim_models import ClaimCandidate, EntityBoundary, ExtractionMethod
+from .claim_discovery import (
+    PDFClaimDiscovery,
+    discover_claims_in_document,
+    discover_claims_from_text,
+    extract_claims_from_text_fallback,
+)
+
+__all__ = [
+    "DocumentPage",
+    "DocumentTable",
+    "ExtractedEvidence",
+    "ParsedDocument",
+    "PDFParser",
+    "parse_pdf",
+    "EvidenceExtractor",
+    # Phase 6B
+    "ClaimCandidate",
+    "EntityBoundary",
+    "ExtractionMethod",
+    "PDFClaimDiscovery",
+    "discover_claims_in_document",
+    "discover_claims_from_text",
+    "extract_claims_from_text_fallback",
+]
