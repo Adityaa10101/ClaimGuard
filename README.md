@@ -105,12 +105,12 @@ ClaimGuard can ingest supported corporate BRSR/ESG PDF filings directly and disc
 
 The PDF Auto-Audit pipeline executes the following stages:
 1. **Page-Aware PDF Ingestion**: Uses `pdfplumber` and `pypdf` to extract page text, tabular boundaries, and structural metadata across all document pages while preserving page-level provenance.
-2. **Semantic Claim Discovery**: Groq/Llama-3 scans disclosure text chunks to identify quantitative targets, baseline/target fiscal years, and claimed percentage changes.
+2. **Semantic Claim Discovery**: Groq/Llama-3 scans disclosure text chunks to identify explicitly stated quantitative claims, reporting periods, and claimed percentage changes.
 3. **Deterministic Offline Fallback**: When Groq is unavailable, unconfigured, or fails, a multi-pattern regex engine discovers explicit percentage claims directly from parsed page text.
 4. **Entity, Metric & Year Matching**: Maps discovered claim candidates to corporate entities (e.g., standalone vs subsidiaries), standardized metric taxonomies, and reporting periods.
 5. **Evidence Resolution & Page Provenance**: Locates exact supporting disclosure tables, linking each data point back to its source page and raw disclosed string.
 6. **Deterministic Verification**: Evaluates the matched evidence against the 15 registered validation rules.
-7. **Controlled Outcome**: Emits reproducible `PASS`, `FLAGGED`, or `UNVERIFIED` results with complete mathematical and citation trails.
+7. **Controlled Outcome**: Emits reproducible `PASS`, `FLAGGED`, or `UNVERIFIED` results with mathematical evidence and source citations whenever verification is successfully completed.
 
 > **Note on Scope**: The current PDF Auto-Audit implementation is a validated vertical slice (demonstrated on real-world filings like Tata Motors FY2024–25 BRSR), rather than universal document-wide support for all arbitrary PDF formats.
 
@@ -183,7 +183,7 @@ ClaimGuard has been validated against the official **Tata Motors Limited (TML) F
 
 ### 4. Deterministic Validation Engine
 - **15 Registered Rules**: Broad domain coverage across Emissions, Energy, Water, and General arithmetic sanity.
-- **Explicit 4-State Taxonomy**: Reproducible `PASS`, `FLAGGED`, `UNVERIFIED` (with granular `MISSING_DATA` / `INVALID_DATA` states), and `NOT_APPLICABLE` outcomes.
+- **Explicit Multi-State Decision & Rule Taxonomy**: Clear distinction between Audit Decision (`PASS`, `FLAGGED`, `UNVERIFIED`), Execution Status (`SUCCESS`, `MISSING_DATA`, `INVALID_DATA`, `ERROR`), and rule-level evaluation status (including `NOT_APPLICABLE` where appropriate).
 - **Strict Mathematical Tolerance**: Configurable `0.05%` variance threshold.
 
 ---
@@ -499,14 +499,16 @@ Detect multi-year anomalies, baseline shifting, and inconsistent sustainability 
 2. **15 Deterministic Validation Rules**: Comprehensive coverage across Emissions, Energy, Water, and General boundaries.
 3. **Explicit Decision Taxonomy**: Clear, transparent separation between `PASS`, `FLAGGED`, and `UNVERIFIED` states.
 4. **Page-Level PDF Provenance**: Retains source pages, disclosure citations, and raw disclosed strings.
-5. **Dual Interface Support**: Interactive Streamlit UI for auditors and REST API for enterprise ERP integrations.
+5. **Dual Interface Support**: Interactive Streamlit UI for auditors and REST API for programmatic and future enterprise integrations.
 6. **Offline Resilience**: Deterministic fallback extraction keeps the audit pipeline operational without external API dependencies.
 
 ---
 
 ## 🚀 Live Demo
 
-> Live demo URL will be added after final deployment.
+**Web App:** https://claimguard-prasunethon.streamlit.app/
+
+The hosted deployment uses platform-managed secrets for Groq; no API keys are stored in the repository.
 
 ---
 
