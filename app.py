@@ -1459,21 +1459,21 @@ def render_landing_view():
     # 8. Roadmap / Next Phase (Visually Secondary & Clearly Demarcated)
     st.markdown("""<div class="section" id="roadmap">
 <div class="cg-section-header">
-<div class="cg-section-tag">Post-MVP Vision &nbsp;•&nbsp; <span class="cg-badge-roadmap">NEXT PHASE</span></div>
+<div class="cg-section-tag"><span class="cg-badge-roadmap">NEXT PHASE</span></div>
 <div class="cg-section-title">Roadmap</div>
 </div>
 <div class="cg-grid-3">
 <div class="cg-card-secondary">
-<div class="cg-card-title">150-Page BRSR PDF Ingestion</div>
-<p class="cg-card-desc"><b>What:</b> Full document parsing.<br><b>Why:</b> To avoid manual copy-paste of narratives.</p>
+<div class="cg-card-title">Multi-Claim Document Auditing</div>
+<p class="cg-card-desc"><b>What:</b> Automatically audit multiple supported claims from a single BRSR.<br><b>Why:</b> Move from one-claim verification to report-level audit workflows.</p>
 </div>
 <div class="cg-card-secondary">
-<div class="cg-card-title">FastAPI Microservices</div>
-<p class="cg-card-desc"><b>What:</b> Production REST API.<br><b>Why:</b> For integration into enterprise ERP systems.</p>
+<div class="cg-card-title">OCR &amp; Scanned Report Support</div>
+<p class="cg-card-desc"><b>What:</b> Extract evidence from scanned and image-based sustainability reports.<br><b>Why:</b> Extend ClaimGuard beyond text-native BRSR filings.</p>
 </div>
 <div class="cg-card-secondary">
 <div class="cg-card-title">Multi-Year Trend Auditing</div>
-<p class="cg-card-desc"><b>What:</b> Time-series anomaly detection.<br><b>Why:</b> To identify data smoothing across reporting cycles.</p>
+<p class="cg-card-desc"><b>What:</b> Detect anomalies and inconsistent sustainability trends across reporting cycles.<br><b>Why:</b> Identify suspicious changes and data smoothing over time.</p>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
