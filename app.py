@@ -1,6 +1,7 @@
 import os
 import streamlit as st
 import pandas as pd
+from typing import Optional
 from dotenv import load_dotenv
 from src.extractor import extract_claim_from_narrative
 from src.rules_engine import verify_claim
