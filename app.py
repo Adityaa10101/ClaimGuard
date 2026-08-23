@@ -96,6 +96,64 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700 !important;
 }
 
+/* Strict Light Theme Controls for Native Streamlit Widgets */
+div[data-testid="stRadio"] label,
+div[data-testid="stRadio"] label span,
+div[data-testid="stRadio"] [data-testid="stMarkdownContainer"] p {
+    color: #0a0a0a !important;
+    font-weight: 500 !important;
+}
+
+div[data-testid="stTextArea"] label,
+div[data-testid="stTextInput"] label,
+div[data-testid="stFileUploader"] label {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+}
+
+div[data-testid="stTextArea"] textarea {
+    background-color: #ffffff !important;
+    color: #0a0a0a !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+}
+
+div[data-testid="stTextArea"] textarea:disabled {
+    background-color: #f9fafb !important;
+    color: #374151 !important;
+    border: 1px solid #e5e7eb !important;
+    -webkit-text-fill-color: #374151 !important;
+}
+
+div[data-testid="stTextInput"] input {
+    background-color: #ffffff !important;
+    color: #0a0a0a !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+}
+
+div[data-testid="stFileUploader"] section {
+    background-color: #fafafa !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 10px !important;
+}
+
+div[data-testid="stFileUploader"] section [data-testid="stMarkdownContainer"] span,
+div[data-testid="stFileUploader"] section [data-testid="stMarkdownContainer"] small {
+    color: #4b5563 !important;
+}
+
+div[data-testid="stExpander"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+}
+
+div[data-testid="stExpander"] summary span {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+}
+
 /* Ensure Material Icon ligatures are preserved and never overridden by plain text */
 [data-testid="stIconMaterial"],
 [data-testid="stIcon"],
